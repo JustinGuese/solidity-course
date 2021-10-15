@@ -1,0 +1,68 @@
+{
+	"compiler": {
+		"version": "0.8.7+commit.e28d00a7"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [],
+				"stateMutability": "payable",
+				"type": "constructor"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address payable",
+						"name": "wallet",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "amount",
+						"type": "uint256"
+					}
+				],
+				"name": "setInheritanceForEachAddress",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"will.sol": "Will"
+		},
+		"evmVersion": "london",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"will.sol": {
+			"keccak256": "0x6c785d2bfa915b5bf7263ae468c2b29488964c8381d66741d39634a11aac6a50",
+			"urls": [
+				"bzz-raw://146bc16ecabde92369c9f56ac7094e39124908572073d0c7336faa3d596d0f29",
+				"dweb:/ipfs/QmUqCvJVcGLQktn1Cbf6Ca5sTLoJ3fWKshNmwjLqnyyKdC"
+			]
+		}
+	},
+	"version": 1
+}
