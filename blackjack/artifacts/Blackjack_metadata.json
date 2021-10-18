@@ -1,0 +1,276 @@
+{
+	"compiler": {
+		"version": "0.8.7+commit.e28d00a7"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [],
+				"stateMutability": "payable",
+				"type": "constructor"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "uint8",
+						"name": "d2",
+						"type": "uint8"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint8[]",
+						"name": "playerCards",
+						"type": "uint8[]"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint8",
+						"name": "playerSum",
+						"type": "uint8"
+					}
+				],
+				"name": "DrawCard",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "uint8[]",
+						"name": "dealerCards",
+						"type": "uint8[]"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint8[]",
+						"name": "playerCards",
+						"type": "uint8[]"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint8",
+						"name": "dealerSum",
+						"type": "uint8"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint8",
+						"name": "playerSum",
+						"type": "uint8"
+					},
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "winDescription",
+						"type": "string"
+					}
+				],
+				"name": "GameLost",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "uint8",
+						"name": "d2",
+						"type": "uint8"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint8",
+						"name": "p1",
+						"type": "uint8"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint8",
+						"name": "p2",
+						"type": "uint8"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint8",
+						"name": "playerSum",
+						"type": "uint8"
+					}
+				],
+				"name": "GameStart",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "uint8[]",
+						"name": "dealerCards",
+						"type": "uint8[]"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint8[]",
+						"name": "playerCards",
+						"type": "uint8[]"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint8",
+						"name": "dealerSum",
+						"type": "uint8"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint8",
+						"name": "playerSum",
+						"type": "uint8"
+					},
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "winDescription",
+						"type": "string"
+					}
+				],
+				"name": "GameWon",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "message",
+						"type": "string"
+					}
+				],
+				"name": "Log",
+				"type": "event"
+			},
+			{
+				"inputs": [],
+				"name": "drawCard",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "endGame",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "getBankBalance",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "getCurrentCards",
+				"outputs": [
+					{
+						"internalType": "uint8",
+						"name": "",
+						"type": "uint8"
+					},
+					{
+						"internalType": "uint8",
+						"name": "",
+						"type": "uint8"
+					},
+					{
+						"internalType": "uint8[]",
+						"name": "",
+						"type": "uint8[]"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "getNrGames",
+				"outputs": [
+					{
+						"internalType": "uint8",
+						"name": "",
+						"type": "uint8"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "getRandomNumber",
+				"outputs": [
+					{
+						"internalType": "uint8",
+						"name": "",
+						"type": "uint8"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "startGame",
+				"outputs": [],
+				"stateMutability": "payable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"blackjack/blackjack.sol": "Blackjack"
+		},
+		"evmVersion": "london",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"blackjack/blackjack.sol": {
+			"keccak256": "0xa3680812a7547e472265056dea0381119f12dbd0e50d5dd1fb5e2d2fe548a2a3",
+			"urls": [
+				"bzz-raw://13c38e5f86b7f93978fdb157c9113ad01af6a3024da4b94b48d70fdf01ec555a",
+				"dweb:/ipfs/QmSMsAa9Gm9VteFW91TCz6cyCkWm1w6ZyyVaK5j8V4AkoP"
+			]
+		}
+	},
+	"version": 1
+}
