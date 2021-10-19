@@ -153,7 +153,7 @@ contract("KingdomBank", (accounts) => {
 
         it("should be possible to unstake after time ", async() => {
             // forward time 60 seconds 
-            helper.advanceTimeAndBlock(60);
+            helper.advanceTimeAndBlock(61);
 
             let res = await kb.harvestAll({from: accounts[1]});
             res = await kb.getCurrentStakes({from: accounts[1]});
@@ -161,6 +161,16 @@ contract("KingdomBank", (accounts) => {
             let defensePoints = res[1].toString();
             attackPoints.should.equal("0");
             defensePoints.should.equal("0");
+
+            // check how many seedcoins we have returned
+            let balance_seed = await kgdsc.balanceOf(accounts[1]);
+            let balance_attack = await kgdat.balanceOf(accounts[1]);
+            balance_seed = balance_seed.toString();
+            balance_attack = balance_attack.toString();
+            console.log("balances of coinds seed/attack", web3.utils.fromWei(balance_seed.toString()), web3.utils.fromWei(balance_attack.toString()));
+            // should have 75 eth * .9 = 67.5 eth returned, plus the 25 we still have = 92.5 eth
+            balance_seed.should.equal(web3.utils.toWei("92.5", "ether"));
+            balance_attack.should.equal(web3.utils.toWei("7.5", "ether"));
         });
     });
 });

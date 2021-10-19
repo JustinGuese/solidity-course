@@ -19,7 +19,7 @@ contract KingdomBank {
 
     event HarvestAttackPoints(address indexed _to, uint _amount);
     event HarvestDefensePoints(address indexed _to, uint _amount);
-    event HarvestRemainingSeedCoins(address indexed _to, uint _amount);
+    event HarvestRemainingSeedCoins(address indexed _to, uint _amount, uint _beforeBurn);
     
     struct Staking {
         uint seedCoinAmount;
@@ -98,9 +98,9 @@ contract KingdomBank {
     }
 
     function _burnReturnSeedcoins(uint nrSeedCoins) private {
-        uint remainingSeedcoins = nrSeedCoins * exchangeRate_Burnpct / 100;
+        uint remainingSeedcoins = nrSeedCoins - (nrSeedCoins * exchangeRate_Burnpct / 100);
         kgdsc.transfer(msg.sender, remainingSeedcoins);
-        emit HarvestRemainingSeedCoins(msg.sender, remainingSeedcoins);
+        emit HarvestRemainingSeedCoins(msg.sender, remainingSeedcoins, nrSeedCoins);
     }
 
     function harvestAll() public {
