@@ -48,7 +48,6 @@ contract KingdomBank {
         
         // enter staking
         // first transact the kgdsc
-        kgdsc.approve(address(this) , nrSeedCoins);
         kgdsc.transferFrom(msg.sender, address(this), nrSeedCoins);
         // kgdsc.transfer(address(this), nrSeedCoins);
         // then store in array

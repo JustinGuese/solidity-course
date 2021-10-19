@@ -82,12 +82,17 @@ contract("KingdomBank", (accounts) => {
             balance.should.equal("0");
         });
 
-        it("matches balance after purchase", async() => {
+        it("customer kgdsc: matches balance after purchase", async() => {
             let res
             res = await kb.buyForETH({from: accounts[1], value: web3.utils.toWei("1", "ether")});
             let balance = await kgdsc.balanceOf(accounts[1]);
             balance = balance.toString();
             balance.should.equal("100000000000000000000");
+        });
+        it("bank kgdsc: matches balance after purchase", async () => {
+            let balance = await kgdsc.balanceOf(kb.address);
+            balance = balance.toString();
+            balance.should.equal("999900000000000000000000");
         });
     });
 
@@ -95,6 +100,8 @@ contract("KingdomBank", (accounts) => {
         it("should be possible to stake kgdsc for kgdat", async() => {
             let res
             // stake half the kgdsc for attack points
+            // approve the contract to spend the amount
+            res = await kgdsc.approve(kb.address, "500000000000000000000", {from: accounts[1]});
             res = await kb.plantForAttackpoints("50000000000000000000", {from: accounts[1]});
             let balance = await kgdsc.balanceOf(accounts[1]);
             balance = balance.toString();
