@@ -1,3 +1,6 @@
+const helper = require("../helpers/truffletimetravel");
+
+
 const KGDSC = artifacts.require("KingdomSeedCoin");
 const KGDAT = artifacts.require("KingdomAttackCoin");
 const KGDDF = artifacts.require("KingdomDefenseCoin");
@@ -146,6 +149,18 @@ contract("KingdomBank", (accounts) => {
             balance = await kgddf.balanceOf(accounts[1]);
             balance = balance.toString();
             balance.should.equal("0");
+        });
+
+        it("should be possible to unstake after time ", async() => {
+            // forward time 60 seconds 
+            helper.advanceTimeAndBlock(60);
+
+            let res = await kb.harvestAll({from: accounts[1]});
+            res = await kb.getCurrentStakes({from: accounts[1]});
+            let attackPoints = res[0].toString();
+            let defensePoints = res[1].toString();
+            attackPoints.should.equal("0");
+            defensePoints.should.equal("0");
         });
     });
 });
