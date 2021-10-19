@@ -38,27 +38,31 @@ contract KingdomBank {
     }
 
     modifier contractHasSeedcoins {
-        require (kgdsc.balanceOf(msg.sender) > 0);
+        require (kgdsc.balanceOf(address(this)) > 0);
         _;
     }
 
     modifier contractHasAttackcoins {
-        require (kgdat.balanceOf(msg.sender) > 0);
+        require (kgdat.balanceOf(address(this)) > 0);
         _;
     }
 
     modifier contractHasDefensecoins {
-        require (kgddf.balanceOf(msg.sender) > 0);
+        require (kgddf.balanceOf(address(this)) > 0);
         _;
     }
     
     // you can only buy the seed coins 
-    function buyForETH() public payable contractHasSeedcoins {
+    function buyForETH() external payable contractHasSeedcoins {
         require(msg.value > 0, "you have to send some ETH to get KingdomSeedcoin");
         require(kgdsc.balanceOf(address(this)) > 0, "uhoh, sry i can't send any more KingdomSeedcoin");
         
         uint rewardTokens = msg.value * exchangeRate;
         kgdsc.transfer(msg.sender, rewardTokens);
+    }
+    
+    function justSendETH() public payable  returns(uint){
+        return address(this).balance;
     }
     
     function plantForAttackpoints(uint nrSeedCoins) public contractHasAttackcoins {
