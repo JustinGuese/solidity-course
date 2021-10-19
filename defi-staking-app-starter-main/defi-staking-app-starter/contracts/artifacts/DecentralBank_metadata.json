@@ -1,0 +1,127 @@
+{
+	"compiler": {
+		"version": "0.8.7+commit.e28d00a7"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "contract REW",
+						"name": "_rew",
+						"type": "address"
+					},
+					{
+						"internalType": "contract Tether",
+						"name": "_tether",
+						"type": "address"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "constructor"
+			},
+			{
+				"inputs": [],
+				"name": "name",
+				"outputs": [
+					{
+						"internalType": "string",
+						"name": "",
+						"type": "string"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "owner",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "rwd",
+				"outputs": [
+					{
+						"internalType": "contract REW",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "tether",
+				"outputs": [
+					{
+						"internalType": "contract Tether",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"defi-staking-app-starter-main/defi-staking-app-starter/contracts/DecentralBank.sol": "DecentralBank"
+		},
+		"evmVersion": "london",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"defi-staking-app-starter-main/defi-staking-app-starter/contracts/DecentralBank.sol": {
+			"keccak256": "0x0199250d9ac7d06b81b8153b78548c81773662d24a3c5cc90341ffcc3375f37f",
+			"urls": [
+				"bzz-raw://96ea3ce95217eb8e276fecce32cb0279b33f99d14a2b57980f92c0b5ec73c93d",
+				"dweb:/ipfs/QmT4AbGLa6y7bMEhipb9cqpDJYE4bgRnVKrC5AKVUYedft"
+			]
+		},
+		"defi-staking-app-starter-main/defi-staking-app-starter/contracts/REW.sol": {
+			"keccak256": "0xa5499396793d743dbd4373a8101422219c560c029cf32a6b9bf1d3eef30428b9",
+			"urls": [
+				"bzz-raw://99b5ca1795e76665c855d0267033f8857c913738d1acf105c4304c5e47aac23b",
+				"dweb:/ipfs/QmcxF3X8wRrEAna6JzAmooRjCpS2DcxLgLiBZmBaLfFbeb"
+			]
+		},
+		"defi-staking-app-starter-main/defi-staking-app-starter/contracts/Tether.sol": {
+			"keccak256": "0x71fd45f246fcb862c03080eb4b66bdd05450daad7ba902931bce4ec92cb15e5e",
+			"urls": [
+				"bzz-raw://7254d8f4a5394d65406cb4e78dc17fd574f3d98f9c779698282013080c9fb330",
+				"dweb:/ipfs/QmV4ZAvvc8QKkXa5Z2mn5FKCPhHCt8VJ4LzLPXUmRKsh8e"
+			]
+		}
+	},
+	"version": 1
+}

@@ -1,5 +1,7 @@
 pragma solidity ^0.8;
 
+
+
 contract REW {
     string public name = "Reward Token";
     string public symbol = "REW";
