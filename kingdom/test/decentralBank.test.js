@@ -182,13 +182,29 @@ contract("KingdomBank", (accounts) => {
 
     describe("NFC title checks", async () => {
         it("should be possible to award an NFC, but only for owner", async() => {
-            const ERROR_MSG = 'VM Exception while processing transaction: revert fook off -- Reason given: fook off.';
+            
+            // there should be no nfc yet
+            let pos = await kb.currentPosition();
+            pos = pos.toString();
+            pos.should.equal("0");
+
             // should work
             await kb.awardItem(accounts[1], {from: accounts[0]});
+            pos = await kb.currentPosition();
+            pos = pos.toString();
+            pos.should.equal("1");
 
-            console.log("this shoudl fail");
+            // owner of check
+            // starting at 1 the count
+            let own = await kb.ownerOf(1);
+            own.should.equal(accounts[1]);
+        });
+        it("should fail: assign nft as non-owner", async() => {
+            const ERROR_MSG = 'VM Exception while processing transaction: revert fook off -- Reason given: fook off.';
+            
             // should fail
             await kb.awardItem(accounts[1], {from: accounts[1]}).should.be.rejectedWith(ERROR_MSG);;
         });
+
     });
 });

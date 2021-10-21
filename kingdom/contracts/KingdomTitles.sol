@@ -45,6 +45,10 @@ contract KingdomTitles is ERC721, KingdomBank {
         return string(bstr);
     }
 
+    function currentPosition() public view returns (uint256) {
+        return uint256(_tokenIds.current());
+    }
+
     function awardItem(address player) public onlyOwner returns (uint256) {
         require(_tokenIds.current() < totalSupply, "uhoh, no titles available anymore");
 
