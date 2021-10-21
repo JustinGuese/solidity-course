@@ -4,7 +4,7 @@ const helper = require("../helpers/truffletimetravel");
 const KGDSC = artifacts.require("KingdomSeedCoin");
 const KGDAT = artifacts.require("KingdomAttackCoin");
 const KGDDF = artifacts.require("KingdomDefenseCoin");
-const KB = artifacts.require("KingdomBank");
+const KB = artifacts.require("KingdomTitles");
 
 require("chai")
 .use(require("chai-as-promised"))
@@ -58,7 +58,8 @@ contract("KingdomBank", (accounts) => {
     describe("KingdomBank Deployment", async () => {
         it("matches name successfully", async() => {
             const name = await kb.name();
-            name.should.equal("Kingdom Bank");
+            console.log("bankname is: ",name);
+            name.should.equal("Kingdom Titles");
         });
         it("contract has kgdsc", async () => {
             let balance = await kgdsc.balanceOf(kb.address);

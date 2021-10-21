@@ -3,10 +3,12 @@ pragma solidity ^0.8;
 import "./KingdomSeedCoin.sol";
 import "./KingdomAttackCoin.sol";
 import "./KingdomDefenseCoin.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
 
 contract KingdomBank {
-    address public owner;
-    string public name = "Kingdom Bank";
+    // address public owner;
+    // string public name = "Kingdom Bank";
     uint8 public exchangeRate = 100;
     // return more defensepoints as attackpoints
     uint8 public exchangeRate_Attackpoints = 10;
@@ -35,7 +37,7 @@ contract KingdomBank {
         kgdat = _kgdat;
         kgddf = _kgddf;
         // after that the coins need to be transferred to KingdomBank
-        owner = msg.sender;
+        // owner = msg.sender;
     }
 
     modifier contractHasSeedcoins {
