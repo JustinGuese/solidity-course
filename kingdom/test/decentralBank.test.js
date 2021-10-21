@@ -4,7 +4,7 @@ const helper = require("../helpers/truffletimetravel");
 const KGDSC = artifacts.require("KingdomSeedCoin");
 const KGDAT = artifacts.require("KingdomAttackCoin");
 const KGDDF = artifacts.require("KingdomDefenseCoin");
-const KB = artifacts.require("KingdomBank");
+const KB = artifacts.require("KingdomTitles");
 
 require("chai")
 .use(require("chai-as-promised"))
@@ -58,7 +58,8 @@ contract("KingdomBank", (accounts) => {
     describe("KingdomBank Deployment", async () => {
         it("matches name successfully", async() => {
             const name = await kb.name();
-            name.should.equal("Kingdom Bank");
+            console.log("bankname is: ",name);
+            name.should.equal("Kingdom Titles");
         });
         it("contract has kgdsc", async () => {
             let balance = await kgdsc.balanceOf(kb.address);
@@ -177,5 +178,33 @@ contract("KingdomBank", (accounts) => {
             balance_attack.should.equal(web3.utils.toWei("7.5", "ether"));
             balance_defense.should.equal(web3.utils.toWei("0.625", "ether"));
         });
+    });
+
+    describe("NFC title checks", async () => {
+        it("should be possible to award an NFC, but only for owner", async() => {
+            
+            // there should be no nfc yet
+            let pos = await kb.currentPosition();
+            pos = pos.toString();
+            pos.should.equal("0");
+
+            // should work
+            await kb.awardItem(accounts[1], {from: accounts[0]});
+            pos = await kb.currentPosition();
+            pos = pos.toString();
+            pos.should.equal("1");
+
+            // owner of check
+            // starting at 1 the count
+            let own = await kb.ownerOf(1);
+            own.should.equal(accounts[1]);
+        });
+        it("should fail: assign nft as non-owner", async() => {
+            const ERROR_MSG = 'VM Exception while processing transaction: revert fook off -- Reason given: fook off.';
+            
+            // should fail
+            await kb.awardItem(accounts[1], {from: accounts[1]}).should.be.rejectedWith(ERROR_MSG);;
+        });
+
     });
 });
