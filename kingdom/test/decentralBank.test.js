@@ -179,4 +179,16 @@ contract("KingdomBank", (accounts) => {
             balance_defense.should.equal(web3.utils.toWei("0.625", "ether"));
         });
     });
+
+    describe("NFC title checks", async () => {
+        it("should be possible to award an NFC, but only for owner", async() => {
+            const ERROR_MSG = 'VM Exception while processing transaction: revert fook off -- Reason given: fook off.';
+            // should work
+            await kb.awardItem(accounts[1], {from: accounts[0]});
+
+            console.log("this shoudl fail");
+            // should fail
+            await kb.awardItem(accounts[1], {from: accounts[1]}).should.be.rejectedWith(ERROR_MSG);;
+        });
+    });
 });
