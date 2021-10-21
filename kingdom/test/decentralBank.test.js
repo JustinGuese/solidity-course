@@ -55,7 +55,7 @@ contract("KingdomBank", (accounts) => {
         });
     });
     // check balance
-    describe("decentral bank deployment", async () => {
+    describe("KingdomBank Deployment", async () => {
         it("matches name successfully", async() => {
             const name = await kb.name();
             name.should.equal("Kingdom Bank");
@@ -79,7 +79,7 @@ contract("KingdomBank", (accounts) => {
     });
 
     // buy some kgdsc with account[1]
-    describe("buy KGDSC for ETH", async () => {
+    describe("buy KGDSC for ETH, and stake it for KGDAT and KGDDF", async () => {
         it("should not have any KGDSC before purchase", async() => {
             let balance = await kgdsc.balanceOf(accounts[1]);
             balance = balance.toString();
@@ -121,12 +121,14 @@ contract("KingdomBank", (accounts) => {
             // stake 75% of seecoins
             // first we need to allow the contract to transfer the tokens
             await kgdsc.approve(kb.address, web3.utils.toWei("100", "ether"), {from: accounts[1]});
-
-            let res = await kb.plantForAttackpoints(web3.utils.toWei("75", "ether"), {from: accounts[1]});
+            // first plant for attackcoins
+            let res = await kb.plantSeeds(web3.utils.toWei("75", "ether"), 0, {from: accounts[1]});
+            // and some defensepoints
+            res = await kb.plantSeeds(web3.utils.toWei("5", "ether"), 1, {from: accounts[1]});
             let balance = await kgdsc.balanceOf(accounts[1]);
             balance = balance.toString();
             // 75% of seecoins should be staked
-            balance.should.equal(web3.utils.toWei("25", "ether"));
+            balance.should.equal(web3.utils.toWei("20", "ether"));
         });
 
         it("should not be possible to unstake before time if over", async() => {
@@ -135,12 +137,12 @@ contract("KingdomBank", (accounts) => {
             let attackPoints = res[0].toString();
             let defensePoints = res[1].toString();
             attackPoints.should.equal(web3.utils.toWei("75", "ether"));
-            defensePoints.should.equal("0");
-            console.log("in staking: attackpoints/defensepoints", attackPoints, defensePoints);
+            defensePoints.should.equal(web3.utils.toWei("5", "ether"));
+            // console.log("in staking: attackpoints/defensepoints", attackPoints, defensePoints);
             // and finally check if balance is still correct
             let balance = await kgdsc.balanceOf(accounts[1]);
             balance = balance.toString();
-            balance.should.equal(web3.utils.toWei("25", "ether"));
+            balance.should.equal(web3.utils.toWei("20", "ether"));
             // also if attackpoints are not prematurely harvested
             balance = await kgdat.balanceOf(accounts[1]);
             balance = balance.toString();
@@ -165,12 +167,15 @@ contract("KingdomBank", (accounts) => {
             // check how many seedcoins we have returned
             let balance_seed = await kgdsc.balanceOf(accounts[1]);
             let balance_attack = await kgdat.balanceOf(accounts[1]);
+            let balance_defense = await kgddf.balanceOf(accounts[1]);
             balance_seed = balance_seed.toString();
             balance_attack = balance_attack.toString();
-            console.log("balances of coinds seed/attack", web3.utils.fromWei(balance_seed.toString()), web3.utils.fromWei(balance_attack.toString()));
+            balance_defense = balance_defense.toString();
+            // console.log("balances of coinds seed/attack/def", web3.utils.fromWei(balance_seed.toString()), web3.utils.fromWei(balance_attack.toString()), web3.utils.fromWei(balance_defense.toString()));
             // should have 75 eth * .9 = 67.5 eth returned, plus the 25 we still have = 92.5 eth
-            balance_seed.should.equal(web3.utils.toWei("92.5", "ether"));
+            balance_seed.should.equal(web3.utils.toWei("92", "ether"));
             balance_attack.should.equal(web3.utils.toWei("7.5", "ether"));
+            balance_defense.should.equal(web3.utils.toWei("0.625", "ether"));
         });
     });
 });

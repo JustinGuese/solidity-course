@@ -8,6 +8,7 @@ contract KingdomBank {
     address public owner;
     string public name = "Kingdom Bank";
     uint8 public exchangeRate = 100;
+    // return more defensepoints as attackpoints
     uint8 public exchangeRate_Attackpoints = 10;
     uint8 public exchangeRate_Defensepoints = 8;
     uint8 public exchangeRate_Burnpct = 10;
@@ -65,10 +66,10 @@ contract KingdomBank {
         return address(this).balance;
     }
     
-    function plantForAttackpoints(uint nrSeedCoins) public contractHasAttackcoins {
+    function plantSeeds(uint nrSeedCoins, uint8 targetCoin) public contractHasAttackcoins contractHasDefensecoins {
         uint kgdsc_balance = kgdsc.balanceOf(msg.sender);
         require(kgdsc_balance >= nrSeedCoins && nrSeedCoins > 0, "you don't have enough seedcoins! buy or trade some");
-        
+        require(targetCoin == 0 || targetCoin == 1, "targetCoin has to be 0=attackcoin or 1=defensecoin");
         // enter staking
         // first transact the kgdsc
         kgdsc.transferFrom(msg.sender, address(this), nrSeedCoins);
@@ -76,7 +77,7 @@ contract KingdomBank {
         // then store in array
         _Staking[msg.sender].push(Staking(
             nrSeedCoins,
-            0,
+            targetCoin,
             block.timestamp + stakingPeriod
             ));
     }
@@ -115,7 +116,7 @@ contract KingdomBank {
                     emit HarvestAttackPoints(msg.sender, attackPoints);
                 }
                 else if (stakeobj.targetCoinType == 1) {
-                    uint defensePoints = stakeobj.seedCoinAmount / exchangeRate_Attackpoints;
+                    uint defensePoints = stakeobj.seedCoinAmount / exchangeRate_Defensepoints;
                     _burnReturnSeedcoins(stakeobj.seedCoinAmount);
                     kgddf.transfer(msg.sender, defensePoints);
                     emit HarvestDefensePoints(msg.sender, defensePoints);
