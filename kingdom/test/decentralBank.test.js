@@ -239,6 +239,10 @@ contract("KingdomBank", (accounts) => {
             await kb.reverseItem(1, {from: accounts[0]});
             owner = await kb.ownerOf(1);
             owner.should.equal(kb.address);
+
+            // other reverse ownerships should fail
+            let ERROR_MSG = "Returned error: VM Exception while processing transaction: revert fook off -- Reason given: fook off.";
+            await kb.reverseItem(1, {from: accounts[1]}).should.be.rejectedWith(ERROR_MSG);
         });
     });
 });
