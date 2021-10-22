@@ -70,11 +70,7 @@ contract KingdomTitles is ERC721, KingdomBank {
         _mint(player, newItemId);
 
         // mark it down in address2ids
-        if (address2ids[player].length == 0) {
-            address2ids[player] = new uint[](newItemId);
-        } else {
-            address2ids[player].push(newItemId);
-        }
+        address2ids[player].push(newItemId);
 
         // then add data to storage
         kingdomtitles[newItemId] = KingdomTitle(0,0,block.timestamp + attackCooldown);
@@ -102,15 +98,6 @@ contract KingdomTitles is ERC721, KingdomBank {
     }
 
     function returnIdsOfAddress(address _own) external view returns (uint256[] memory ownedIds) {
-        uint256 nrIds = balanceOf(_own);
-        if (nrIds == 0) {
-            return ownedIds;
-        }
-        else {
-            ownedIds = new uint256[](nrIds);
-            for (uint i = 0; i < nrIds; i++) {
-                ownedIds[i] = uint(address2ids[_own][i]);
-            }
-        }
+        return address2ids[_own];
     }
 }

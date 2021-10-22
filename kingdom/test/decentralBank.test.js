@@ -365,47 +365,66 @@ contract("KingdomBank", (accounts) => {
             // first to own title
             // 1 is owned by contract due to test
             // check what acc 1 owns
-            let idsOfAcc1 = await kb.returnIdsOfAddress(accounts[0]);
-            console.log("acc 0 owns the ids: ", idsOfAcc1);
-            idsOfAcc1 = await kb.returnIdsOfAddress(accounts[0]);
-            console.log("acc 1 owns the ids: ", idsOfAcc1);
-            idsOfAcc1 = await kb.returnIdsOfAddress(accounts[0]);
-            console.log("acc 2 owns the ids: ", idsOfAcc1);
+            // acc1 owns 0,3,5
+            // acc2 owns 2
+            // let idsOfAcc1 = await kb.returnIdsOfAddress(accounts[0]);
+            // console.log("acc 0 owns the ids: ", idsOfAcc1);
+            // idsOfAcc1 = await kb.returnIdsOfAddress(accounts[1]);
+            // console.log("acc 1 owns the ids: ", idsOfAcc1);
+            // idsOfAcc1 = await kb.returnIdsOfAddress(accounts[2]);
+            // console.log("acc 2 owns the ids: ", idsOfAcc1);
 
             let own = await kb.ownerOf(2);
-            console.log(own, accounts)
+            // console.log(own, accounts)
             own.should.equal(accounts[2]);
+            // also check if 5 is belonging to acc 1
+            own = await kb.ownerOf(5);
+            own.should.equal(accounts[1]);
+
             // approve
-            await kgdat.approve(kb.address,web3.utils.toWei("1", "ether"), {from: accounts[1]});
-            await kgddf.approve(kb.address,web3.utils.toWei(".6", "ether"), {from: accounts[1]});
+            await kgdat.approve(kb.address,web3.utils.toWei("1", "ether"), {from: accounts[2]});
+            await kgddf.approve(kb.address,web3.utils.toWei(".6", "ether"), {from: accounts[2]});
             // deposit
-            await kb.assignMilitaryToTitle(web3.utils.toWei("1", "ether"), 1, 0, {from: accounts[1]});
-            await kb.assignMilitaryToTitle(web3.utils.toWei(".6", "ether"), 1, 1, {from: accounts[1]});
+            await kb.assignMilitaryToTitle(web3.utils.toWei("1", "ether"), 2, 0, {from: accounts[2]});
+            await kb.assignMilitaryToTitle(web3.utils.toWei(".6", "ether"), 2, 1, {from: accounts[2]});
             // check if transaction worked
-            let acc1_attack = await kgdat.balanceOf(accounts[1]);
-            let acc1_def = await kgddf.balanceOf(accounts[1]);
+            let acc1_attack = await kgdat.balanceOf(accounts[2]);
+            let acc1_def = await kgddf.balanceOf(accounts[2]);
             acc1_attack = acc1_attack.toString();
             acc1_def = acc1_def.toString();
-            acc1_attack.should.equal(web3.utils.toWei("6.5", "ether"));
-            acc1_def.should.equal(web3.utils.toWei(".025", "ether"));
+            acc1_attack.should.equal(web3.utils.toWei("29", "ether"));
+            acc1_def.should.equal(web3.utils.toWei("24.4", "ether"));
 
             // alseo check if the right amount had been signed 
-            let res = await kb.getTitleStats(1);
+            let res = await kb.getTitleStats(2);
             let attack = res[0].toString();
             let def = res[1].toString();
             let read = res[2];
             attack.should.equal(web3.utils.toWei("1", "ether"));
             def.should.equal(web3.utils.toWei(".6", "ether"));
-            read.should.equal(false);
+            // read.should.equal(false);
 
-            // do the same for account[2] and his tile nr 2?
-            own = await kb.ownerOf(5);
-            // console.log("own2", own, accounts);
-            own.should.equal(accounts[3]);
-            let attacc2 = await kgdat.balanceOf(accounts[3]);
-            let defacc2 = await kgddf.balanceOf(accounts[3]);
-            console.log(attacc2.toString(), defacc2.toString(), "balance ac 3");
+            // console.log("now do the same for owner of title 5");
+
+            // do the same for owner of title 5, so acc nr 1
+            // approve
+            await kgdat.approve(kb.address,web3.utils.toWei("1", "ether"), {from: accounts[1]});
+            await kgddf.approve(kb.address,web3.utils.toWei(".6", "ether"), {from: accounts[1]});
+            // deposit
+            await kb.assignMilitaryToTitle(web3.utils.toWei("1", "ether"), 5, 0, {from: accounts[1]});
+            await kb.assignMilitaryToTitle(web3.utils.toWei(".6", "ether"), 5, 1, {from: accounts[1]});
+            // console.log(attacc2.toString(), defacc2.toString(), "balance ac 3");
+            // alseo check if the right amount had been signed 
+            res = await kb.getTitleStats(5);
+            attack = res[0].toString();
+            def = res[1].toString();
+            read = res[2];
+            attack.should.equal(web3.utils.toWei("1", "ether"));
+            def.should.equal(web3.utils.toWei(".6", "ether"));
+            // read.should.equal(false);
         });
+
+        
     });
 
 });

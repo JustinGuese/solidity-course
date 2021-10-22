@@ -102,5 +102,22 @@ contract KingdomGameMechanic is KingdomTitles {
         }
     }
 
+    function attackBoss(uint16 titleId) public hasTitle {
+        require(ownerOf(titleId) == msg.sender, "sorry, only the owner can attack his boss");
+        uint32 bossid = getBoss(titleId);
+        address bossid_address = ownerOf(bossid);
+
+        require(bossid_address != msg.sender, "boy, don't attack yourself plz");
+
+        (uint attacker_Attackpoints, , bool ready4Attack ) = getTitleStats(titleId);
+        require(ready4Attack, "your attack cooldown is not down yet. please try again after cooldown");
+
+        (uint defender_Attackpoints, uint defender_Defensepoints, ) = getTitleStats(bossid);
+
+        uint tmp_game_defender_Defensepoints = defender_Defensepoints * 15 / 10; // counts 1.5
+
+
+    }
+
 
 }
