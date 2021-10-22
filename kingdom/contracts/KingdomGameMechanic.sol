@@ -52,16 +52,21 @@ contract KingdomGameMechanic is KingdomTitles {
 
     function getBoss(uint16 id) public view returns (uint16 bossid) {
         uint currentPos = currentPosition();
-        require(id <= currentPos, "id is not yet assigned");
+        require(0 < id && id <= currentPos, "id is not yet assigned");
 
         // remember binary tree
-        if (id % 2 == 0) {
-            // if even
-            bossid = id / 2;
+        if (id == 1) {
+            bossid = 0;
         }
         else {
-            // if odd
-            bossid = (id - 1) / 2;
+            if (id % 2 == 0) {
+                // if even
+                bossid = id / 2;
+            }
+            else {
+                // if odd
+                bossid = (id - 1) / 2;
+            }
         }
         return bossid;
     }

@@ -307,6 +307,53 @@ contract("KingdomBank", (accounts) => {
             acc1_seeds.should.equal(web3.utils.toWei("92", "ether"));
         });
 
+        it("next assign them some nifties", async() => {
+            await kb.awardItem(accounts[2], {from: accounts[0]});
+            await kb.awardItem(accounts[1], {from: accounts[0]});
+            await kb.awardItem(accounts[3], {from: accounts[0]});
+            await kb.awardItem(accounts[1], {from: accounts[0]});
+
+            let balacc1 = await kb.balanceOf(accounts[1]);
+            let balacc2 = await kb.balanceOf(accounts[2]);
+
+            // console.log(balacc1.toString(), balacc2.toString());
+            balacc1.toString().should.equal("2");
+            balacc2.toString().should.equal("1");
+
+            // let own1 = await kb.ownerOf(1);
+            // let own2 = await kb.ownerOf(2);
+            // let own3 = await kb.ownerOf(3);
+            // let own4 = await kb.ownerOf(4);
+            // own1.should.equal()
+
+        });
+
+        it("servant checks", async() => {
+            // neighbor and parent check
+            let n = await kb.getServants(1);
+            let left = n[0].toString();
+            let right = n[1].toString(); 
+            left.should.equal("2");
+            right.should.equal("3");
+
+            n = await kb.getServants(3);
+            left = n[0].toString();
+            right = n[1].toString();
+            left.should.equal("0");
+            right.should.equal("0"); // bc not assigned yet
+
+            // next get neighbors of not assigned yet
+            const ERR_NOTASS = "VM Exception while processing transaction: revert id is not yet assigned";
+            n = await kb.getServants(30).should.be.rejectedWith(ERR_NOTASS);
+        });
+
+        it("boss check", async() => {
+            let boss = await kb.getBoss(1);
+            boss.toString().should.equal("0");
+
+            boss = await kb.getBoss(4);
+            boss.toString().should.equal("2");
+        });
     });
 
 });
