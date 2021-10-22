@@ -58,7 +58,7 @@ contract("KingdomBank", (accounts) => {
     describe("KingdomBank Deployment", async () => {
         it("matches name successfully", async() => {
             const name = await kb.name();
-            console.log("bankname is: ",name);
+            // console.log("bankname is: ",name);
             name.should.equal("Kingdom Titles");
         });
         it("contract has kgdsc", async () => {
@@ -191,7 +191,7 @@ contract("KingdomBank", (accounts) => {
             let nrNfts = await kb.balanceOf(accounts[0]);
             nrNfts = nrNfts.toString();
             nrNfts.should.equal("0");
-            
+
             nrNfts = await kb.balanceOf(kb.address);
             nrNfts = nrNfts.toString();
             nrNfts.should.equal("0");
