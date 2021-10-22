@@ -4,7 +4,8 @@ const helper = require("../helpers/truffletimetravel");
 const KGDSC = artifacts.require("KingdomSeedCoin");
 const KGDAT = artifacts.require("KingdomAttackCoin");
 const KGDDF = artifacts.require("KingdomDefenseCoin");
-const KB = artifacts.require("KingdomTitles");
+// next one actually contains KingdomBank, KingdomTItles and KingdomGameMechanics
+const KB = artifacts.require("KingdomGameMechanic");
 
 require("chai")
 .use(require("chai-as-promised"))
@@ -244,5 +245,56 @@ contract("KingdomBank", (accounts) => {
             let ERROR_MSG = "Returned error: VM Exception while processing transaction: revert fook off -- Reason given: fook off.";
             await kb.reverseItem(1, {from: accounts[1]}).should.be.rejectedWith(ERROR_MSG);
         });
+
+        // it("should only be possible to assign totalsupply (10000) nfts", async() => {
+        //     for (let i = 0; i < 10000; i++) {
+        //         await kb.awardItem(accounts[1], {from: accounts[0]});
+        //     }
+        // });
     });
+
+    // now game mechanic tests
+    describe("game mechanics", async () => {
+        it("first assign some attack and defense points to acc 2", async() => {
+            // let acc 2 farm some attack and defense points
+            const ERROR_NO_SEEDS = "VM Exception while processing transaction: revert you don't have enough seedcoins! buy or trade some -- Reason given: you don't have enough seedcoins! buy or trade some.";
+            await kb.plantSeeds(web3.utils.toWei("5", "ether"), 0, {from: accounts[2]}).should.be.rejectedWith(ERROR_NO_SEEDS);
+
+            // buy seed coins
+            await kb.buyForETH({from: accounts[2], value: web3.utils.toWei("5", "ether")});
+            let seedbal = await kgdsc.balanceOf(accounts[2]);
+            seedbal = seedbal.toString();
+            seedbal.should.equal(web3.utils.toWei("500", "ether"));
+
+            // plant them
+            // first approve
+            await kgdsc.approve(kb.address, web3.utils.toWei("500", "ether"), {from: accounts[2]});
+            await kb.plantSeeds(web3.utils.toWei("300", "ether"), 0, {from: accounts[2]})
+            await kb.plantSeeds(web3.utils.toWei("200", "ether"), 1, {from: accounts[2]})
+
+            // now seeds should be 0
+            seedbal = await kgdsc.balanceOf(accounts[2]);
+            seedbal = seedbal.toString();
+            seedbal.should.equal(web3.utils.toWei("0", "ether"));
+
+            // let it grow
+            helper.advanceTimeAndBlock(61);
+
+            // harvest
+            await kb.harvestAll({from: accounts[2]});
+
+            // check if amount is right
+            let acc2_attack = await kgdat.balanceOf(accounts[1]);
+            let acc2_defense = await kgddf.balanceOf(accounts[1]);
+            let acc2_seeds = await kgdsc.balanceOf(accounts[2]);
+            console.log("attack/def/seeds acc2 : ", web3.utils.fromWei(acc2_attack.toString()), web3.utils.fromWei(acc2_defense.toString()), web3.utils.fromWei(acc2_seeds.toString()));
+
+            let acc1_attack = await kgdat.balanceOf(accounts[1]);
+            let acc1_defense = await kgddf.balanceOf(accounts[1]);
+            let acc1_seeds = await kgdsc.balanceOf(accounts[1]);
+            console.log("acc1_attack/defense", web3.utils.fromWei(acc1_attack.toString()), web3.utils.fromWei(acc1_defense.toString()), web3.utils.fromWei(acc1_seeds.toString()));
+        });
+
+    });
+
 });
