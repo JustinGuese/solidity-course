@@ -254,7 +254,7 @@ contract("KingdomBank", (accounts) => {
     });
 
     // now game mechanic tests
-    describe("game mechanics", async () => {
+    describe("game mechanics - setup", async () => {
         it("first assign some attack and defense points to acc 2", async() => {
             // let acc 2 farm some attack and defense points
             const ERROR_NO_SEEDS = "VM Exception while processing transaction: revert you don't have enough seedcoins! buy or trade some -- Reason given: you don't have enough seedcoins! buy or trade some.";
@@ -353,6 +353,27 @@ contract("KingdomBank", (accounts) => {
 
             boss = await kb.getBoss(4);
             boss.toString().should.equal("2");
+        });
+
+    });
+
+    describe("Game Mechanics - attack and sacking",  async() => {
+
+        it("transfer attack and defensepoints to a title", async() => {
+            // first to own title
+            // approve
+            await kgdat.approve(kb.address,web3.utils.toWei("1", "ether"), {from: accounts[1]});
+            await kgddf.approve(kb.address,web3.utils.toWei(".6", "ether"), {from: accounts[1]});
+            // deposit
+            await kb.assignMilitaryToTitle(web3.utils.toWei("1", "ether"), 1, 0, {from: accounts[1]});
+            await kb.assignMilitaryToTitle(web3.utils.toWei(".6", "ether"), 1, 1, {from: accounts[1]});
+            // check if transaction worked
+            let acc1_attack = await kgdat.balanceOf(accounts[1]);
+            let acc1_def = await kgddf.balanceOf(accounts[1]);
+            acc1_attack = acc1_attack.toString();
+            acc1_def = acc1_def.toString();
+            acc1_attack.should.equal(web3.utils.toWei("6.5", "ether"));
+            acc1_def.should.equal(web3.utils.toWei(".025", "ether"));
         });
     });
 

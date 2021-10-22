@@ -11,8 +11,17 @@ contract KingdomTitles is ERC721, KingdomBank {
     address private _owner;
     
     Counters.Counter private _tokenIds;
-    uint16 public totalSupply = 10000;
+    uint16 constant public totalSupply = 10000;
+    uint public attackCooldown = 60 seconds;
     string public baseUrl = "https://www.kingdomcrypto.com/titles/";
+
+    struct KingdomTitle {
+        uint attackPoints;
+        uint defensePoints;
+        uint readyTimeAttack;
+    }
+
+    KingdomTitle[totalSupply] public kingdomtitles;
 
     constructor(KingdomSeedCoin kgdsc, KingdomAttackCoin kgdat, KingdomDefenseCoin kgddf) ERC721("Kingdom Titles", "KGD") KingdomBank(kgdsc, kgdat, kgddf) {
         _owner = _msgSender();
@@ -56,6 +65,9 @@ contract KingdomTitles is ERC721, KingdomBank {
 
         uint256 newItemId = _tokenIds.current();
         _mint(player, newItemId);
+
+        // then add data to storage
+        kingdomtitles[newItemId] = KingdomTitle(0,0,block.timestamp + attackCooldown);
 
         return newItemId;
     }

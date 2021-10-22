@@ -3,7 +3,6 @@ pragma solidity ^0.8;
 import "./KingdomTitles.sol";
 
 contract KingdomGameMechanic is KingdomTitles {
-    uint public attackCooldown = 60 seconds;
 
     constructor (KingdomSeedCoin kgdsc, KingdomAttackCoin kgdat, KingdomDefenseCoin kgddf) KingdomTitles(kgdsc, kgdat, kgddf) {
 
@@ -17,11 +16,11 @@ contract KingdomGameMechanic is KingdomTitles {
     event Sacked(address attacker, address defender, 
                 uint16 new_attacker_id, uint16 new_looser_id);
 
-    struct KingdomTitle {
-        uint32 attackPoints;
-        uint32 defensePoints;
-        uint readyTimeAttack;
+    modifier hasTitle {
+        require(balanceOf(msg.sender) > 0, "to use this function you need a title! go buy one!");
+        _;
     }
+
 
     function _getLeftChild(uint16 id) internal pure returns (uint16 left) {
         return id * 2;
@@ -69,6 +68,38 @@ contract KingdomGameMechanic is KingdomTitles {
             }
         }
         return bossid;
+    }
+
+    function getTitleStats(uint32 titleId) public view returns (uint attackPoints, uint defensePoints, bool ready4attack){
+        require(titleId <= currentPosition(), "title id not yet assigned, go get one");
+        attackPoints = kingdomtitles[titleId].attackPoints;
+        defensePoints = kingdomtitles[titleId].defensePoints;
+        ready4attack = kingdomtitles[titleId].readyTimeAttack >= block.timestamp;
+        return (attackPoints, defensePoints, ready4attack);
+    }
+
+    function assignMilitaryToTitle(uint nrCoins, uint32 titleId, uint8 coinType) public {
+        uint currentPos = currentPosition();
+        require(0 < titleId && titleId <= currentPos, "title id is not yet assigned");
+        // needs an approve first!
+
+        // first checks
+        // title needs to be owned by sender -> actually allow this for guilds etc
+        // require(ownerOf(titleId) == msg.sender, "you can not assign Military P")
+        // check if sender has that amount
+        require(coinType == 0 || coinType == 1, "other coin types not supported yet, must be 0 or 1");
+        if (coinType == 0) {
+            // attack points
+            require(kgdat.balanceOf(msg.sender) >= nrCoins, "you do not have that many attack coins");
+            kgdat.transferFrom(msg.sender, address(this), nrCoins);
+            kingdomtitles[titleId].attackPoints += nrCoins;
+        }
+        else if (coinType == 1) {
+            // def coins
+            require(kgddf.balanceOf(msg.sender) >= nrCoins, "you do not have that many defense coins");
+            kgddf.transferFrom(msg.sender, address(this), nrCoins);
+            kingdomtitles[titleId].defensePoints += nrCoins;
+        }
     }
 
 
