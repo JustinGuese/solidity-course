@@ -284,15 +284,27 @@ contract("KingdomBank", (accounts) => {
             await kb.harvestAll({from: accounts[2]});
 
             // check if amount is right
-            let acc2_attack = await kgdat.balanceOf(accounts[1]);
-            let acc2_defense = await kgddf.balanceOf(accounts[1]);
+            let acc2_attack = await kgdat.balanceOf(accounts[2]);
+            let acc2_defense = await kgddf.balanceOf(accounts[2]);
             let acc2_seeds = await kgdsc.balanceOf(accounts[2]);
-            console.log("attack/def/seeds acc2 : ", web3.utils.fromWei(acc2_attack.toString()), web3.utils.fromWei(acc2_defense.toString()), web3.utils.fromWei(acc2_seeds.toString()));
+            // console.log("attack/def/seeds acc2 : ", web3.utils.fromWei(acc2_attack.toString()), web3.utils.fromWei(acc2_defense.toString()), web3.utils.fromWei(acc2_seeds.toString()));
+            acc2_attack = acc2_attack.toString();
+            acc2_defense = acc2_defense.toString();
+            acc2_seeds = acc2_seeds.toString();
+            acc2_attack.should.equal(web3.utils.toWei("30", "ether"));
+            acc2_defense.should.equal(web3.utils.toWei("25", "ether"));
+            acc2_seeds.should.equal(web3.utils.toWei("450", "ether"));
 
             let acc1_attack = await kgdat.balanceOf(accounts[1]);
             let acc1_defense = await kgddf.balanceOf(accounts[1]);
             let acc1_seeds = await kgdsc.balanceOf(accounts[1]);
-            console.log("acc1_attack/defense", web3.utils.fromWei(acc1_attack.toString()), web3.utils.fromWei(acc1_defense.toString()), web3.utils.fromWei(acc1_seeds.toString()));
+            // console.log("acc1_attack/defense", web3.utils.fromWei(acc1_attack.toString()), web3.utils.fromWei(acc1_defense.toString()), web3.utils.fromWei(acc1_seeds.toString()));
+            acc1_attack = acc1_attack.toString();
+            acc1_defense = acc1_defense.toString();
+            acc1_seeds = acc1_seeds.toString();
+            acc1_attack.should.equal(web3.utils.toWei("7.5", "ether"));
+            acc1_defense.should.equal(web3.utils.toWei("0.625", "ether"));
+            acc1_seeds.should.equal(web3.utils.toWei("92", "ether"));
         });
 
     });
