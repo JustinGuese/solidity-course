@@ -4,7 +4,7 @@ const helper = require("../helpers/truffletimetravel");
 const KGDSC = artifacts.require("KingdomSeedCoin");
 const KGDAT = artifacts.require("KingdomAttackCoin");
 const KGDDF = artifacts.require("KingdomDefenseCoin");
-const KB = artifacts.require("KingdomBank");
+const KB = artifacts.require("KingdomTitles");
 
 require("chai")
 .use(require("chai-as-promised"))
@@ -58,7 +58,8 @@ contract("KingdomBank", (accounts) => {
     describe("KingdomBank Deployment", async () => {
         it("matches name successfully", async() => {
             const name = await kb.name();
-            name.should.equal("Kingdom Bank");
+            // console.log("bankname is: ",name);
+            name.should.equal("Kingdom Titles");
         });
         it("contract has kgdsc", async () => {
             let balance = await kgdsc.balanceOf(kb.address);
@@ -74,6 +75,11 @@ contract("KingdomBank", (accounts) => {
             let balance = await kgddf.balanceOf(kb.address);
             balance = balance.toString();
             balance.should.equal("1000000000000000000000000");
+        });
+        it("NFT check, supply etc", async () => {
+            let totalSupply = await kb.totalSupply();
+            totalSupply = totalSupply.toString();
+            totalSupply.should.equal("10000");
         });
 
     });
@@ -176,6 +182,67 @@ contract("KingdomBank", (accounts) => {
             balance_seed.should.equal(web3.utils.toWei("92", "ether"));
             balance_attack.should.equal(web3.utils.toWei("7.5", "ether"));
             balance_defense.should.equal(web3.utils.toWei("0.625", "ether"));
+        });
+    });
+
+    describe("NFT ownership check", async () => {
+
+        it("should be possible to check balance of NFTs", async() => {
+            let nrNfts = await kb.balanceOf(accounts[0]);
+            nrNfts = nrNfts.toString();
+            nrNfts.should.equal("0");
+
+            nrNfts = await kb.balanceOf(kb.address);
+            nrNfts = nrNfts.toString();
+            nrNfts.should.equal("0");
+        });
+    });
+
+    describe("NFT title checks", async () => {
+        it("should be possible to award an NFC, but only for owner", async() => {
+            
+            // there should be no nfc yet
+            let pos = await kb.currentPosition();
+            pos = pos.toString();
+            pos.should.equal("0");
+
+            // should work
+            await kb.awardItem(accounts[1], {from: accounts[0]});
+            pos = await kb.currentPosition();
+            pos = pos.toString();
+            pos.should.equal("1");
+
+            // owner of check
+            // starting at 1 the count
+            let own = await kb.ownerOf(1);
+            own.should.equal(accounts[1]);
+        });
+        it("should fail: assign nft as non-owner", async() => {
+            const ERROR_MSG = 'VM Exception while processing transaction: revert fook off -- Reason given: fook off.';
+            
+            // should fail
+            await kb.awardItem(accounts[1], {from: accounts[1]}).should.be.rejectedWith(ERROR_MSG);;
+        });
+
+    });
+
+    describe("NFT should be able to be reversed by contract, e.g. winning mechanism", async () => {
+        it("just grab first item and reverse it to contract address", async() => {
+            let pos = await kb.currentPosition();
+            pos = pos.toString();
+            // checks if accounts[1] still owns that damn niftie
+            pos.should.equal("1");
+            let owner = await kb.ownerOf(1);
+            owner.should.equal(accounts[1]);
+
+            // now reverse it
+            await kb.reverseItem(1, {from: accounts[0]});
+            owner = await kb.ownerOf(1);
+            owner.should.equal(kb.address);
+
+            // other reverse ownerships should fail
+            let ERROR_MSG = "Returned error: VM Exception while processing transaction: revert fook off -- Reason given: fook off.";
+            await kb.reverseItem(1, {from: accounts[1]}).should.be.rejectedWith(ERROR_MSG);
         });
     });
 });
