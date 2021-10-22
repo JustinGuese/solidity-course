@@ -23,6 +23,8 @@ contract KingdomTitles is ERC721, KingdomBank {
 
     KingdomTitle[totalSupply] public kingdomtitles;
 
+    mapping (address => uint[]) public address2ids;
+
     constructor(KingdomSeedCoin kgdsc, KingdomAttackCoin kgdat, KingdomDefenseCoin kgddf) ERC721("Kingdom Titles", "KGD") KingdomBank(kgdsc, kgdat, kgddf) {
         _owner = _msgSender();
     }
@@ -66,6 +68,13 @@ contract KingdomTitles is ERC721, KingdomBank {
         uint256 newItemId = _tokenIds.current();
         _mint(player, newItemId);
 
+        // mark it down in address2ids
+        if (address2ids[player].length == 0) {
+            address2ids[player] = new uint[](newItemId);
+        } else {
+            address2ids[player].push(newItemId);
+        }
+
         // then add data to storage
         kingdomtitles[newItemId] = KingdomTitle(0,0,block.timestamp + attackCooldown);
 
@@ -75,10 +84,32 @@ contract KingdomTitles is ERC721, KingdomBank {
     function reverseItem(uint256 itemId) public onlyOwner returns (bool) {
         address ownerOfItem = ownerOf(itemId);
         _transfer(ownerOfItem, address(this), itemId);
+        uint pos = 6666;
+        for (uint i = 0; i < address2ids[ownerOfItem].length; i++) {
+            if (address2ids[ownerOfItem][i] == itemId) {
+                pos = i;
+                break;
+            }
+        }
+        require(pos != 6666, "reverse item function... item not found in address2ids");
+        delete address2ids[ownerOfItem][pos];
         return true;
     }
 
     function tokenMetadata(uint256 _tokenId) public view returns (string memory infoUrl) {
         return string(abi.encodePacked(baseUrl, uint2str(_tokenId)));
+    }
+
+    function returnIdsOfAddress(address _own) external view returns (uint256[] memory ownedIds) {
+        uint256 nrIds = balanceOf(_own);
+        if (nrIds == 0) {
+            return ownedIds;
+        }
+        else {
+            ownedIds = new uint256[](nrIds);
+            for (uint i = 0; i < nrIds; i++) {
+                ownedIds[i] = uint(address2ids[_own][i]);
+            }
+        }
     }
 }

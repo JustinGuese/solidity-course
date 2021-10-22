@@ -360,7 +360,21 @@ contract("KingdomBank", (accounts) => {
     describe("Game Mechanics - attack and sacking",  async() => {
 
         it("transfer attack and defensepoints to a title", async() => {
+            // account 2 and 3 will play against each other, with 3 and title 4 being the child of 2
+
             // first to own title
+            // 1 is owned by contract due to test
+            // check what acc 1 owns
+            let idsOfAcc1 = await kb.returnIdsOfAddress(accounts[0]);
+            console.log("acc 0 owns the ids: ", idsOfAcc1);
+            idsOfAcc1 = await kb.returnIdsOfAddress(accounts[0]);
+            console.log("acc 1 owns the ids: ", idsOfAcc1);
+            idsOfAcc1 = await kb.returnIdsOfAddress(accounts[0]);
+            console.log("acc 2 owns the ids: ", idsOfAcc1);
+
+            let own = await kb.ownerOf(2);
+            console.log(own, accounts)
+            own.should.equal(accounts[2]);
             // approve
             await kgdat.approve(kb.address,web3.utils.toWei("1", "ether"), {from: accounts[1]});
             await kgddf.approve(kb.address,web3.utils.toWei(".6", "ether"), {from: accounts[1]});
@@ -383,6 +397,14 @@ contract("KingdomBank", (accounts) => {
             attack.should.equal(web3.utils.toWei("1", "ether"));
             def.should.equal(web3.utils.toWei(".6", "ether"));
             read.should.equal(false);
+
+            // do the same for account[2] and his tile nr 2?
+            own = await kb.ownerOf(5);
+            // console.log("own2", own, accounts);
+            own.should.equal(accounts[3]);
+            let attacc2 = await kgdat.balanceOf(accounts[3]);
+            let defacc2 = await kgddf.balanceOf(accounts[3]);
+            console.log(attacc2.toString(), defacc2.toString(), "balance ac 3");
         });
     });
 
