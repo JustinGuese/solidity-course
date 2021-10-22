@@ -63,6 +63,7 @@ contract KingdomTitles is ERC721, KingdomBank {
     function awardItem(address player) public onlyOwner returns (uint256) {
         require(_tokenIds.current() < totalSupply, "uhoh, no titles available anymore");
 
+        // todo: get rid of tokenIds and exchange with struct
         _tokenIds.increment();      
 
         uint256 newItemId = _tokenIds.current();
