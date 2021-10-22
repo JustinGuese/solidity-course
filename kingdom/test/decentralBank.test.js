@@ -374,6 +374,15 @@ contract("KingdomBank", (accounts) => {
             acc1_def = acc1_def.toString();
             acc1_attack.should.equal(web3.utils.toWei("6.5", "ether"));
             acc1_def.should.equal(web3.utils.toWei(".025", "ether"));
+
+            // alseo check if the right amount had been signed 
+            let res = await kb.getTitleStats(1);
+            let attack = res[0].toString();
+            let def = res[1].toString();
+            let read = res[2];
+            attack.should.equal(web3.utils.toWei("1", "ether"));
+            def.should.equal(web3.utils.toWei(".6", "ether"));
+            read.should.equal(false);
         });
     });
 
