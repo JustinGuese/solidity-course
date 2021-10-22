@@ -424,7 +424,12 @@ contract("KingdomBank", (accounts) => {
             // read.should.equal(false);
         });
 
-        
+        it("should work to attack", async() => {
+            // acc1 owns 0,3,5
+            // acc2 owns 2
+            // meaning 5 will attack 2
+            await kb.attackBoss(5, {from: accounts[1]});
+        });
     });
 
 });

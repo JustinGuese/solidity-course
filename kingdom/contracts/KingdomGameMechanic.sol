@@ -4,22 +4,33 @@ import "./KingdomTitles.sol";
 
 contract KingdomGameMechanic is KingdomTitles {
 
-    constructor (KingdomSeedCoin kgdsc, KingdomAttackCoin kgdat, KingdomDefenseCoin kgddf) KingdomTitles(kgdsc, kgdat, kgddf) {
+    uint private nowStore;
 
+    constructor (KingdomSeedCoin kgdsc, KingdomAttackCoin kgdat, KingdomDefenseCoin kgddf) KingdomTitles(kgdsc, kgdat, kgddf) {
+        nowStore = now;
     }
 
     event Attack(address attacker, address defender, 
                 uint16 attacker_id, uint16 defender_id, 
-                uint32 attackPoints, uint32 defensePoints,
+                uint32 attackPointsBefore, uint32 defensePointsBefore,
+                uint32 deadAttackers, uint32 deadDefenders,
                 bool won);
 
     event Sacked(address attacker, address defender, 
-                uint16 new_attacker_id, uint16 new_looser_id);
+                uint16 new_attacker_id);
 
     modifier hasTitle {
         require(balanceOf(msg.sender) > 0, "to use this function you need a title! go buy one!");
         _;
     }
+
+    function _random() private pure returns (uint8) {
+        // random number between 0 and 99
+        uint8 random = uint8( uint(keccak256(abi.encodePacked(block.difficulty, nowStore))) % 100);
+        nowStore = uint8(nowStore + random);
+        return random;
+    }
+
 
 
     function _getLeftChild(uint16 id) internal pure returns (uint16 left) {
@@ -102,6 +113,59 @@ contract KingdomGameMechanic is KingdomTitles {
         }
     }
 
+    function _attackResults(uint attackerId, uint defenderId, address attackerAddress, address defenderAddress, uint attackerPoints, uint defenderPoints, bool won) private onlyOwner {
+        // we have to give the title of the looser to the attacker
+        if (won) {
+            transferFrom(defenderAddress, attackerAddress, defenderId);
+            emit Sacked(attackerAddress, defenderAddress, 
+                    defenderId);
+        }
+        // next we have to let the people die accordingly
+        uint ratio = attackerPoints / defenderPoints * 10;
+        uint8 randyDie = _random();
+
+        // set default die values
+        uint dieCountDefenders = defenderPoints;
+        uint dieCountAttackers = defenderPoints;
+
+        if (ratio > 20) {
+            // more than double the units
+            // all dead of defenders, some dead of attackers
+            uint dieCountDefenders = defenderPoints;
+            uint dieCountAttackers = defenderPoints / 10;
+            kgddf.transferFrom(defenderAddress, address(this), dieCountDefenders);
+            // calculate how many died of attackers
+            if (randyDie > 80 && ratio < 30) {
+                // let 10 pct of defenderpoints die
+                kgdat.transferFrom(attackerAddress, address(this), dieCountAttackers);
+            }
+            else {
+                //no dead
+            }
+        }
+        else {
+            // calculate the difference 
+            uint dieCountAttackers = defenderPoints * (randyDie / 100) * 2;
+            if (dieCountAttackers > attackerPoints) {
+                dieCountAttackers = attackerPoints;
+            }
+            uint dieCountDefenders = defenderPoints - dieCountAttackers;
+            if (dieCountDefenders < 0) {
+                dieCountDefenders = defenderPoints;
+            }
+            kgdat.transferFrom(attackerAddress, address(this), dieCountAttackers);
+            kgddf.transferFrom(defenderAddress, address(this), dieCountDefenders);
+        }
+        emit Attack(attackerAddress, defenderAddress, 
+                attackerId, defenderId, 
+                attackerPoints, defenderPoints,
+                dieCountAttackers, dieCountDefenders,
+                won);
+        // finally update the title struct
+        kingdomtitles[attackerId].attackerPoints -= dieCountAttackers;
+        kingdomtitles[defenderId].defenderPoints -= dieCountDefenders; 
+    }
+
     function attackBoss(uint16 titleId) public hasTitle {
         require(ownerOf(titleId) == msg.sender, "sorry, only the owner can attack his boss");
         uint32 bossid = getBoss(titleId);
@@ -116,6 +180,46 @@ contract KingdomGameMechanic is KingdomTitles {
 
         uint tmp_game_defender_Defensepoints = defender_Defensepoints * 15 / 10; // counts 1.5
 
+        // make it so that more than double attack points is a sure win
+        uint8 randy = _random();
+        uint ratio = attacker_Attackpoints / tmp_game_defender_Defensepoints * 10; // double would be 20
+        if (ratio > 20) {
+            if (randy == 99) {
+                // really tiny chance that an attack is lost
+                _attackResults(titleId, bossid, msg.sender, bossid_address, attacker_Attackpoints, tmp_game_defender_Defensepoints, false);
+            }
+            else {
+                // win attack
+                _attackResults(titleId, bossid, msg.sender, bossid_address, attacker_Attackpoints, tmp_game_defender_Defensepoints, true);
+            }
+        }
+        else if (ratio >= 10) {
+            // if it's one against one
+            uint bonus = ratio - 10;
+            if (randy + bonus * 5 > 60) {
+                // win
+                _attackResults(titleId, bossid, msg.sender, bossid_address, attacker_Attackpoints, tmp_game_defender_Defensepoints, true);
+            }
+            else {
+                // lost
+                _attackResults(titleId, bossid, msg.sender, bossid_address, attacker_Attackpoints, tmp_game_defender_Defensepoints, false);
+            }
+        }
+        else if (ratio >= 8) {
+            // slightly attackers than defenders
+            if (randy > 90) {
+                // win
+                _attackResults(titleId, bossid, msg.sender, bossid_address, attacker_Attackpoints, tmp_game_defender_Defensepoints, true);
+            }
+            else {
+                // lost
+                _attackResults(titleId, bossid, msg.sender, bossid_address, attacker_Attackpoints, tmp_game_defender_Defensepoints, false);
+            }
+        }
+        else {
+            // lost
+            _attackResults(titleId, bossid, msg.sender, bossid_address, attacker_Attackpoints, tmp_game_defender_Defensepoints, false);
+        }
 
     }
 
