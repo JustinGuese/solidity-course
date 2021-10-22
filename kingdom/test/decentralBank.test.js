@@ -76,6 +76,11 @@ contract("KingdomBank", (accounts) => {
             balance = balance.toString();
             balance.should.equal("1000000000000000000000000");
         });
+        it("NFT check, supply etc", async () => {
+            let totalSupply = await kb.totalSupply();
+            totalSupply = totalSupply.toString();
+            totalSupply.should.equal("10000");
+        });
 
     });
 
@@ -180,7 +185,20 @@ contract("KingdomBank", (accounts) => {
         });
     });
 
-    describe("NFC title checks", async () => {
+    describe("NFT ownership check", async () => {
+
+        it("should be possible to check balance of NFTs", async() => {
+            let nrNfts = await kb.balanceOf(accounts[0]);
+            nrNfts = nrNfts.toString();
+            nrNfts.should.equal("0");
+            
+            nrNfts = await kb.balanceOf(kb.address);
+            nrNfts = nrNfts.toString();
+            nrNfts.should.equal("0");
+        });
+    });
+
+    describe("NFT title checks", async () => {
         it("should be possible to award an NFC, but only for owner", async() => {
             
             // there should be no nfc yet
@@ -206,5 +224,21 @@ contract("KingdomBank", (accounts) => {
             await kb.awardItem(accounts[1], {from: accounts[1]}).should.be.rejectedWith(ERROR_MSG);;
         });
 
+    });
+
+    describe("NFT should be able to be reversed by contract, e.g. winning mechanism", async () => {
+        it("just grab first item and reverse it to contract address", async() => {
+            let pos = await kb.currentPosition();
+            pos = pos.toString();
+            // checks if accounts[1] still owns that damn niftie
+            pos.should.equal("1");
+            let owner = await kb.ownerOf(1);
+            owner.should.equal(accounts[1]);
+
+            // now reverse it
+            await kb.reverseItem(1, {from: accounts[0]});
+            owner = await kb.ownerOf(1);
+            owner.should.equal(kb.address);
+        });
     });
 });

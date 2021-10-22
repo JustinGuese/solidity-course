@@ -60,6 +60,12 @@ contract KingdomTitles is ERC721, KingdomBank {
         return newItemId;
     }
 
+    function reverseItem(uint256 itemId) public onlyOwner returns (bool) {
+        address ownerOfItem = ownerOf(itemId);
+        _transfer(ownerOfItem, address(this), itemId);
+        return true;
+    }
+
     function tokenMetadata(uint256 _tokenId) public view returns (string memory infoUrl) {
         return string(abi.encodePacked(baseUrl, uint2str(_tokenId)));
     }
