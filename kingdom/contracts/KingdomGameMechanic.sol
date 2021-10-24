@@ -7,13 +7,13 @@ contract KingdomGameMechanic is KingdomTitles {
     uint private nowStore;
 
     constructor (KingdomSeedCoin kgdsc, KingdomAttackCoin kgdat, KingdomDefenseCoin kgddf) KingdomTitles(kgdsc, kgdat, kgddf) {
-        nowStore = now;
+        nowStore = block.timestamp;
     }
 
     event Attack(address attacker, address defender, 
                 uint16 attacker_id, uint16 defender_id, 
-                uint32 attackPointsBefore, uint32 defensePointsBefore,
-                uint32 deadAttackers, uint32 deadDefenders,
+                uint attackPointsBefore, uint defensePointsBefore,
+                uint deadAttackers, uint deadDefenders,
                 bool won);
 
     event Sacked(address attacker, address defender, 
@@ -24,7 +24,7 @@ contract KingdomGameMechanic is KingdomTitles {
         _;
     }
 
-    function _random() private pure returns (uint8) {
+    function _random() private returns (uint8) {
         // random number between 0 and 99
         uint8 random = uint8( uint(keccak256(abi.encodePacked(block.difficulty, nowStore))) % 100);
         nowStore = uint8(nowStore + random);
@@ -113,7 +113,7 @@ contract KingdomGameMechanic is KingdomTitles {
         }
     }
 
-    function _attackResults(uint attackerId, uint defenderId, address attackerAddress, address defenderAddress, uint attackerPoints, uint defenderPoints, bool won) private onlyOwner {
+    function _attackResults(uint16 attackerId, uint16 defenderId, address attackerAddress, address defenderAddress, uint attackerPoints, uint defenderPoints, bool won) private onlyOwner {
         // we have to give the title of the looser to the attacker
         if (won) {
             transferFrom(defenderAddress, attackerAddress, defenderId);
@@ -131,8 +131,8 @@ contract KingdomGameMechanic is KingdomTitles {
         if (ratio > 20) {
             // more than double the units
             // all dead of defenders, some dead of attackers
-            uint dieCountDefenders = defenderPoints;
-            uint dieCountAttackers = defenderPoints / 10;
+            dieCountDefenders = defenderPoints;
+            dieCountAttackers = defenderPoints / 10;
             kgddf.transferFrom(defenderAddress, address(this), dieCountDefenders);
             // calculate how many died of attackers
             if (randyDie > 80 && ratio < 30) {
@@ -145,11 +145,11 @@ contract KingdomGameMechanic is KingdomTitles {
         }
         else {
             // calculate the difference 
-            uint dieCountAttackers = defenderPoints * (randyDie / 100) * 2;
+            dieCountAttackers = defenderPoints * (randyDie / 100) * 2;
             if (dieCountAttackers > attackerPoints) {
                 dieCountAttackers = attackerPoints;
             }
-            uint dieCountDefenders = defenderPoints - dieCountAttackers;
+            dieCountDefenders = defenderPoints - dieCountAttackers;
             if (dieCountDefenders < 0) {
                 dieCountDefenders = defenderPoints;
             }
@@ -162,13 +162,13 @@ contract KingdomGameMechanic is KingdomTitles {
                 dieCountAttackers, dieCountDefenders,
                 won);
         // finally update the title struct
-        kingdomtitles[attackerId].attackerPoints -= dieCountAttackers;
-        kingdomtitles[defenderId].defenderPoints -= dieCountDefenders; 
+        kingdomtitles[attackerId].attackPoints -= dieCountAttackers;
+        kingdomtitles[defenderId].defensePoints -= dieCountDefenders; 
     }
 
     function attackBoss(uint16 titleId) public hasTitle {
         require(ownerOf(titleId) == msg.sender, "sorry, only the owner can attack his boss");
-        uint32 bossid = getBoss(titleId);
+        uint16 bossid = getBoss(titleId);
         address bossid_address = ownerOf(bossid);
 
         require(bossid_address != msg.sender, "boy, don't attack yourself plz");
@@ -176,7 +176,7 @@ contract KingdomGameMechanic is KingdomTitles {
         (uint attacker_Attackpoints, , bool ready4Attack ) = getTitleStats(titleId);
         require(ready4Attack, "your attack cooldown is not down yet. please try again after cooldown");
 
-        (uint defender_Attackpoints, uint defender_Defensepoints, ) = getTitleStats(bossid);
+        ( , uint defender_Defensepoints, ) = getTitleStats(bossid);
 
         uint tmp_game_defender_Defensepoints = defender_Defensepoints * 15 / 10; // counts 1.5
 
