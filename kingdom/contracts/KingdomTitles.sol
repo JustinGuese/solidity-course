@@ -9,8 +9,7 @@ contract KingdomTitles is ERC721, KingdomBank {
     using Counters for Counters.Counter;
     
     address private _owner;
-    
-    Counters.Counter private _tokenIds;
+
     uint16 constant public totalSupply = 10000;
     uint public attackCooldown = 60 seconds;
     string public baseUrl = "https://www.kingdomcrypto.com/titles/";
@@ -25,12 +24,22 @@ contract KingdomTitles is ERC721, KingdomBank {
 
     mapping (address => uint[]) public address2ids;
 
+    // this one is used to remember which title belonged to the user if transferred temporarily to the contract
+    mapping(uint => address) public borrowed_id2owner;
+
     constructor(KingdomSeedCoin kgdsc, KingdomAttackCoin kgdat, KingdomDefenseCoin kgddf) ERC721("Kingdom Titles", "KGD") KingdomBank(kgdsc, kgdat, kgddf) {
         _owner = _msgSender();
     }
 
     modifier onlyOwner {
-        require(_owner == msg.sender, "fook off");
+        require(_owner == msg.sender, "fook off, you are not the owner of the contract");
+        _;
+    }
+
+    modifier onlyAssignedAndOwner(uint256 titleId) {
+        // titles can only be interacted with if they belong to the contract. this has to be done in order to transfer titles later on
+        require(ownerOf(titleId) == address(this), "title has to belong to the contract to be interacted with. Please transfer it to the contract first - your address will of course be saved");
+        require(borrowed_id2owner[titleId] == msg.sender, "you are not the owner of this title");
         _;
     }
 
@@ -57,17 +66,17 @@ contract KingdomTitles is ERC721, KingdomBank {
     }
 
     function currentPosition() public view returns (uint256) {
-        return uint256(_tokenIds.current());
+        return uint256(kingdomtitles.length);
     }
 
     function awardItem(address player) public onlyOwner returns (uint256) {
-        require(_tokenIds.current() < totalSupply, "uhoh, no titles available anymore");
+        require(kingdomtitles.length < totalSupply, "uhoh, no titles available anymore");     
 
-        // todo: get rid of tokenIds and exchange with struct
-        _tokenIds.increment();      
+        uint256 newItemId = kingdomtitles.length + 1;
+        _mint(address(this), newItemId); // player
 
-        uint256 newItemId = _tokenIds.current();
-        _mint(player, newItemId);
+        // remember whcih player it usually belongs to
+        borrowed_id2owner[newItemId] = player;
 
         // mark it down in address2ids
         address2ids[player].push(newItemId);
@@ -78,23 +87,41 @@ contract KingdomTitles is ERC721, KingdomBank {
         return newItemId;
     }
 
-    function reverseItem(uint256 itemId) public onlyOwner returns (bool) {
-        address ownerOfItem = ownerOf(itemId);
-        _transfer(ownerOfItem, address(this), itemId);
+    function transferFrom(address from, address to, uint256 tokenId) 
+
+    function withdraw(uint titleId) public onlyAssignedAndOwner {
+        // onlyAssignedAndOwner checks if the title belongs to the contract and if the player is the owner of the title
+        _transfer(address(this), msg.sender, titleId);
         uint pos = 6666;
-        for (uint i = 0; i < address2ids[ownerOfItem].length; i++) {
-            if (address2ids[ownerOfItem][i] == itemId) {
-                pos = i;
-                break;
-            }
-        }
         require(pos != 6666, "reverse item function... item not found in address2ids");
         delete address2ids[ownerOfItem][pos];
-        return true;
+        address2ids[msg.sender].remove(titleId);
+        delete borrowed_id2owner[titleId];
     }
+
+    // function reverseItem(uint256 itemId) public onlyOwner returns (bool) {
+    //     address ownerOfItem = ownerOf(itemId);
+    //     _transfer(ownerOfItem, address(this), itemId);
+    //     uint pos = 6666;
+    //     for (uint i = 0; i < address2ids[ownerOfItem].length; i++) {
+    //         if (address2ids[ownerOfItem][i] == itemId) {
+    //             pos = i;
+    //             break;
+    //         }
+    //     }
+    //     require(pos != 6666, "reverse item function... item not found in address2ids");
+    //     delete address2ids[ownerOfItem][pos];
+    //     return true;
+    // }
 
     function tokenMetadata(uint256 _tokenId) public view returns (string memory infoUrl) {
         return string(abi.encodePacked(baseUrl, uint2str(_tokenId)));
+    }
+
+    function balanceOf(address own) override external view returns (uint256 balance) {
+        // return balanceOf(msg.sender);
+        // not that simple, bc it can actually be assigned to the contract
+        return uint256(address2ids[own].length);
     }
 
     function returnIdsOfAddress(address _own) external view returns (uint256[] memory ownedIds) {

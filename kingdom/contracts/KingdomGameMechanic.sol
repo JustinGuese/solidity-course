@@ -83,12 +83,13 @@ contract KingdomGameMechanic is KingdomTitles {
         return bossid;
     }
 
-    function getTitleStats(uint32 titleId) public view returns (uint attackPoints, uint defensePoints, bool ready4attack){
+    function getTitleStats(uint32 titleId) public view returns (uint attackPoints, uint defensePoints, bool ready4attack, bool active){
         require(titleId <= currentPosition(), "title id not yet assigned, go get one");
         attackPoints = kingdomtitles[titleId].attackPoints;
         defensePoints = kingdomtitles[titleId].defensePoints;
         ready4attack = kingdomtitles[titleId].readyTimeAttack >= block.timestamp;
-        return (attackPoints, defensePoints, ready4attack);
+        active = kingdomtitles[titleId].active;
+        return (attackPoints, defensePoints, ready4attack, active);
     }
 
     function assignMilitaryToTitle(uint nrCoins, uint32 titleId, uint8 coinType) public {
@@ -113,6 +114,12 @@ contract KingdomGameMechanic is KingdomTitles {
             kgddf.transferFrom(msg.sender, address(this), nrCoins);
             kingdomtitles[titleId].defensePoints += nrCoins;
         }
+    }
+
+    function setTitleAsActive(uint32 titleId) public {
+        require(titleId <= currentPosition(), "title id not yet assigned, go get one");
+        require(ownerOf(titleId) == msg.sender, "you can not set this title as active");
+        
     }
 
     function _attackResults(uint16 attackerId, uint16 defenderId, address attackerAddress, address defenderAddress, uint attackerPoints, uint defenderPoints, bool won) private {
