@@ -243,7 +243,7 @@ contract("KingdomBank", (accounts) => {
 
             // other reverse ownerships should fail
             let ERROR_MSG = "Returned error: VM Exception while processing transaction: revert fook off -- Reason given: fook off.";
-            await kb.reverseItem(1, {from: accounts[1]}).should.be.rejectedWith(ERROR_MSG);
+            await kb.reverseItem(1, {from: accounts[3]}).should.be.rejectedWith(ERROR_MSG);
         });
 
         // it("should only be possible to assign totalsupply (10000) nfts", async() => {

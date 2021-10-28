@@ -6,6 +6,8 @@ contract KingdomGameMechanic is KingdomTitles {
 
     uint private nowStore;
 
+    event Log(address error);
+
     constructor (KingdomSeedCoin kgdsc, KingdomAttackCoin kgdat, KingdomDefenseCoin kgddf) KingdomTitles(kgdsc, kgdat, kgddf) {
         nowStore = block.timestamp;
     }
@@ -113,9 +115,10 @@ contract KingdomGameMechanic is KingdomTitles {
         }
     }
 
-    function _attackResults(uint16 attackerId, uint16 defenderId, address attackerAddress, address defenderAddress, uint attackerPoints, uint defenderPoints, bool won) private onlyOwner {
+    function _attackResults(uint16 attackerId, uint16 defenderId, address attackerAddress, address defenderAddress, uint attackerPoints, uint defenderPoints, bool won) private {
         // we have to give the title of the looser to the attacker
         if (won) {
+            emit Log(attackerAddress);
             transferFrom(defenderAddress, attackerAddress, defenderId);
             emit Sacked(attackerAddress, defenderAddress, 
                     defenderId);
