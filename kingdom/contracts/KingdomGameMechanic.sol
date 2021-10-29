@@ -6,7 +6,7 @@ contract KingdomGameMechanic is KingdomTitles {
 
     uint private nowStore;
 
-    event Log(address error);
+    event Log(uint error);
 
     constructor (KingdomSeedCoin kgdsc, KingdomAttackCoin kgdat, KingdomDefenseCoin kgddf) KingdomTitles(kgdsc, kgdat, kgddf) {
         nowStore = block.timestamp;
@@ -16,13 +16,18 @@ contract KingdomGameMechanic is KingdomTitles {
                 uint16 attacker_id, uint16 defender_id, 
                 uint attackPointsBefore, uint defensePointsBefore,
                 uint deadAttackers, uint deadDefenders,
-                bool won);
+                uint denominator, uint remainder, bool won);
 
     event Sacked(address attacker, address defender, 
                 uint16 new_attacker_id);
 
     modifier hasTitle {
         require(balanceOf(msg.sender) > 0, "to use this function you need a title! go buy one!");
+        _;
+    }
+
+    modifier contractNeedsTotalControl {
+        require(isApprovedForAll(msg.sender, address(this)), "you need to call setApprovalForAll in order to play a game...");
         _;
     }
 
@@ -115,64 +120,41 @@ contract KingdomGameMechanic is KingdomTitles {
         }
     }
 
-    function _attackResults(uint16 attackerId, uint16 defenderId, address attackerAddress, address defenderAddress, uint attackerPoints, uint defenderPoints, bool won) private {
+    function _attackResults(uint16 attackerId, uint16 defenderId, address attackerAddress, address defenderAddress, uint attackerPoints, uint defenderPoints, uint deadAttackers, uint deadDefenders, uint denominator, uint remainder, bool won) private {
         // we have to give the title of the looser to the attacker
-        if (won) {
-            emit Log(attackerAddress);
-            transferFrom(defenderAddress, attackerAddress, defenderId);
-            emit Sacked(attackerAddress, defenderAddress, 
-                    defenderId);
-        }
+        // if (won) {
+        //     // idk how to solve it yet...
+        //     emit Log(attackerAddress);
+        //     transferFrom(defenderAddress, address(this), defenderId);
+        //     emit Sacked(attackerAddress, defenderAddress, 
+        //             defenderId);
+        // }
         // next we have to let the people die accordingly
-        uint ratio = attackerPoints / defenderPoints * 10;
-        uint8 randyDie = _random();
-
-        // set default die values
-        uint dieCountDefenders = defenderPoints;
-        uint dieCountAttackers = defenderPoints;
-
-        if (ratio > 20) {
-            // more than double the units
-            // all dead of defenders, some dead of attackers
-            dieCountDefenders = defenderPoints;
-            dieCountAttackers = defenderPoints / 10;
-            kgddf.transferFrom(defenderAddress, address(this), dieCountDefenders);
-            // calculate how many died of attackers
-            if (randyDie > 80 && ratio < 30) {
-                // let 10 pct of defenderpoints die
-                kgdat.transferFrom(attackerAddress, address(this), dieCountAttackers);
-            }
-            else {
-                //no dead
-            }
-        }
-        else {
-            // calculate the difference 
-            dieCountAttackers = defenderPoints * (randyDie / 100) * 2;
-            if (dieCountAttackers > attackerPoints) {
-                dieCountAttackers = attackerPoints;
-            }
-            dieCountDefenders = defenderPoints - dieCountAttackers;
-            if (dieCountDefenders < 0) {
-                dieCountDefenders = defenderPoints;
-            }
-            kgdat.transferFrom(attackerAddress, address(this), dieCountAttackers);
-            kgddf.transferFrom(defenderAddress, address(this), dieCountDefenders);
-        }
         emit Attack(attackerAddress, defenderAddress, 
                 attackerId, defenderId, 
                 attackerPoints, defenderPoints,
-                dieCountAttackers, dieCountDefenders,
-                won);
+                deadAttackers, defenderPoints,
+                denominator, remainder, won);
         // finally update the title struct
-        kingdomtitles[attackerId].attackPoints -= dieCountAttackers;
-        kingdomtitles[defenderId].defensePoints -= dieCountDefenders; 
+        kingdomtitles[attackerId].attackPoints -= deadAttackers;
+        require(kingdomtitles[attackerId].attackPoints > 0, "uhoh, the attackpoints are zero...");
+        kingdomtitles[defenderId].defensePoints -= deadDefenders; 
+        require(kingdomtitles[defenderId].defensePoints > 0, "uhoh, the defensepoints are zero...");
     }
 
-    function attackBoss(uint16 titleId) public hasTitle {
+    function _divide(uint numerator, uint denominator) private pure returns (uint quotient, uint remainder) {
+        quotient  = numerator / denominator;
+        remainder = numerator - denominator * quotient;
+        return (quotient, remainder);
+    }
+
+    function attackBoss(uint16 titleId) public hasTitle contractNeedsTotalControl {
         require(ownerOf(titleId) == msg.sender, "sorry, only the owner can attack his boss");
+
         uint16 bossid = getBoss(titleId);
         address bossid_address = ownerOf(bossid);
+        // check if boss setApprovalForAll as well, required
+        require(isApprovedForAll(bossid_address, address(this)), "your boss needs to setApprovedForAll to this contract, otherwise the mechanism does not work. He only earns money if that approval has been set though.");
 
         require(bossid_address != msg.sender, "boy, don't attack yourself plz");
 
@@ -181,50 +163,43 @@ contract KingdomGameMechanic is KingdomTitles {
 
         ( , uint defender_Defensepoints, ) = getTitleStats(bossid);
 
-        uint tmp_game_defender_Defensepoints = defender_Defensepoints * 15 / 10; // counts 1.5
+        uint tmp_game_defender_Defensepoints = (defender_Defensepoints * 15) / 10; // counts 1.5
 
         // make it so that more than double attack points is a sure win
         uint8 randy = _random();
-        uint ratio = attacker_Attackpoints / tmp_game_defender_Defensepoints * 10; // double would be 20
-        if (ratio > 20) {
-            if (randy == 99) {
-                // really tiny chance that an attack is lost
-                _attackResults(titleId, bossid, msg.sender, bossid_address, attacker_Attackpoints, tmp_game_defender_Defensepoints, false);
-            }
-            else {
-                // win attack
-                _attackResults(titleId, bossid, msg.sender, bossid_address, attacker_Attackpoints, tmp_game_defender_Defensepoints, true);
-            }
+        (uint quotient, uint remainder) = _divide(attacker_Attackpoints, tmp_game_defender_Defensepoints); // double would be 20
+        uint deadAttackers = 0;
+        uint deadDefenders = 0;
+        bool won = false;
+        if (quotient > 3) {
+            // no discussion needed
+            deadDefenders = defender_Defensepoints;
+            deadAttackers = 0;
+            won = true;
         }
-        else if (ratio >= 10) {
-            // if it's one against one
-            uint bonus = ratio - 10;
-            if (randy + bonus * 5 > 60) {
-                // win
-                _attackResults(titleId, bossid, msg.sender, bossid_address, attacker_Attackpoints, tmp_game_defender_Defensepoints, true);
-            }
-            else {
-                // lost
-                _attackResults(titleId, bossid, msg.sender, bossid_address, attacker_Attackpoints, tmp_game_defender_Defensepoints, false);
-            }
-        }
-        else if (ratio >= 8) {
-            // slightly attackers than defenders
+        else if (quotient > 2) {
+            // more than double the attackers
+            deadDefenders = defender_Defensepoints;
+            won = true;
+            // some attackers dead except rare case
+            deadAttackers = uint(attacker_Attackpoints / 10);
             if (randy > 90) {
-                // win
-                _attackResults(titleId, bossid, msg.sender, bossid_address, attacker_Attackpoints, tmp_game_defender_Defensepoints, true);
+                // in a rare case not all defenders die, some can flee
+                deadDefenders = uint(defender_Defensepoints / 2);
             }
-            else {
-                // lost
-                _attackResults(titleId, bossid, msg.sender, bossid_address, attacker_Attackpoints, tmp_game_defender_Defensepoints, false);
-            }
+        }
+        else if (quotient > 1 && remainder > 5) {
+            won = true;
+            deadDefenders = uint(defender_Defensepoints / 2);
+            deadAttackers = uint(attacker_Attackpoints / 2);
         }
         else {
-            // lost
-            _attackResults(titleId, bossid, msg.sender, bossid_address, attacker_Attackpoints, tmp_game_defender_Defensepoints, false);
+            // tmp
+            won = false;
+            deadDefenders = randy;
+            deadAttackers = randy;
         }
 
+        _attackResults(titleId, bossid, msg.sender, bossid_address, attacker_Attackpoints, defender_Defensepoints, deadAttackers, deadDefenders, quotient, remainder, won);
     }
-
-
 }

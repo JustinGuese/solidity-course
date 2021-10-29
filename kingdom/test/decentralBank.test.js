@@ -254,7 +254,7 @@ contract("KingdomBank", (accounts) => {
     });
 
     // now game mechanic tests
-    describe("game mechanics - setup", async () => {
+    describe("Game mechanics - setup", async () => {
         it("first assign some attack and defense points to acc 2", async() => {
             // let acc 2 farm some attack and defense points
             const ERROR_NO_SEEDS = "VM Exception while processing transaction: revert you don't have enough seedcoins! buy or trade some -- Reason given: you don't have enough seedcoins! buy or trade some.";
@@ -425,10 +425,44 @@ contract("KingdomBank", (accounts) => {
         });
 
         it("should work to attack", async() => {
+            // chegg befgore
+            let five = await kb.getTitleStats(5);
+            let attack5bef = five[0].toString();
+            let def5bef = five[1].toString();
+            let read5bef = five[2];
+            console.log("before stats for tile 5: ", attack5bef, def5bef, read5bef);
+            let two = await kb.getTitleStats(2);
+            let attack2bef = two[0].toString();
+            let def2bef = two[1].toString();
+            let read2bef = two[2];
+            console.log("before stats for tile 2: ", attack2bef, def2bef, read2bef);
+
             // acc1 owns 0,3,5
             // acc2 owns 2
             // meaning 5 will attack 2
-            await kb.attackBoss(5, {from: accounts[1]});
+            let ERR_NOTASS = "VM Exception while processing transaction: revert you need to call setApprovalForAll in order to play a game...";
+            await kb.attackBoss(5, {from: accounts[1]}).should.be.rejectedWith(ERR_NOTASS);
+
+            await kb.setApprovalForAll(kb.address, true, {from: accounts[1]});
+
+            ERR_NOTASS = "VM Exception while processing transaction: revert your boss needs to setApprovedForAll to this contract, otherwise the mechanism does not work. He only earns money if that approval has been set though.";
+            await kb.attackBoss(5, {from: accounts[1]}).should.be.rejectedWith(ERR_NOTASS);
+
+            await kb.setApprovalForAll(kb.address, true, {from: accounts[2]});
+
+            await kb.attackBoss(5, {from: accounts[1]})
+
+            // check title stacks
+            five = await kb.getTitleStats(5);
+            let attack5 = five[0].toString();
+            let def5 = five[1].toString();
+            let read5 = five[2];
+            console.log("after stats for tile 5: ", attack5, def5, read5);
+            two = await kb.getTitleStats(2);
+            let attack2 = two[0].toString();
+            let def2 = two[1].toString();
+            let read2 = two[2];
+            console.log("after stats for tile 2: ", attack2, def2, read2);
         });
     });
 
