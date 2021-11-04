@@ -1,5 +1,3 @@
-import logo from './logo.svg';
-import './App.css';
 import React, { Component } from 'react';
 import Web3 from 'web3';
 import KingdomAttackCoin from './contracts/KingdomAttackCoin.json';
@@ -117,20 +115,51 @@ class App extends Component {
   render() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Plz shit in my mouth
-        </p>
-        <p>
+    <nav class="navbar navbar-inverse">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>                        
+          </button>
+          <a class="navbar-brand" href="#">Logo</a>
+        </div>
+        <div class="collapse navbar-collapse" id="myNavbar">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Home</a></li>
+            <li><a href="#">About</a></li>
+            <li><a href="#">Projects</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+      
+    <div class="container-fluid text-center">    
+      <div class="row content">
+        <div class="col-sm-2 sidenav">
+          <p><a href="#">Link</a></p>
+          <p><a href="#">Link</a></p>
+          <p><a href="#">Link</a></p>
+        </div>
+        <div class="col-sm-8 text-left"> 
+          <h1>Welcome</h1>
+          <p>
           Current network id is: {this.state.networkId}
         </p>
         <p>
           Still loading? {this.state.loading ? "Yes" : "No"}
         </p>
-        </header>
-        <body>
-        <table>
+        </div>
+        </div>
+        
+        <div class="col-sm-8 content text-left">
+
+        <table class= "table table-striped table-dark text-left">
           <tbody>
             <tr>
               <td>Account:</td>
@@ -159,20 +188,12 @@ class App extends Component {
           </tbody>
         </table>
 
-        <div className="App-body">
-          <div className="App-body-left">
-            <div className="App-body-left-top">
-              <h1>Kingdom Attack Coin</h1>
-              <p>
-                This is a simple DApp that allows you to buy and sell Kingdom Attack Coins.
-              </p>
-              </div>
-              <div className="App-body-left-bottom">
-                <h2>Buy Kingdom Attack Coins</h2>
-                <p>
-                  This is a simple DApp that allows you to buy and sell Kingdom Attack Coins.
-                </p>
-                <form onSubmit={(event) => {
+
+          <h3>Buy KingdomSeedcoins for Ether</h3>
+
+          <p>Kaufe Coins für ETH du spasst</p>
+
+          <form onSubmit={(event) => {
                   event.preventDefault()
                   let amount = event.target.amount.value
                   this.buyForEth(amount)
@@ -181,10 +202,21 @@ class App extends Component {
                   <input name="amount" type="text" placeholder="Amount of Kingdom Attack Coins to buy" />
                   <button type="submit">Buy Kingdom Attack Coins</button>
                 </form>
-              </div>
+          
+
+
+
+        </div>
+        <div class="col-sm-2 sidenav">
+          <div class="well">
+            <p>ADS</p>
           </div>
+          <div class="well">
+            <p>ADS</p>
           </div>
-      </body>
+        </div>
+      </div>
+
     </div>
   )
 }
