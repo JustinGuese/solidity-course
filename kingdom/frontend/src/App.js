@@ -108,6 +108,12 @@ class App extends Component {
     this.LoadBlockchainData();
   }
 
+  // logic for buying seedcoin with eth
+  async buyForEth(amount) {
+    console.log("buyForEth called", amount);
+    this.state.kgdbc.methods.buyForETH().send({ from: this.state.account, value: amount });
+  }
+
   render() {
   return (
     <div className="App">
@@ -122,6 +128,8 @@ class App extends Component {
         <p>
           Still loading? {this.state.loading ? "Yes" : "No"}
         </p>
+        </header>
+        <body>
         <table>
           <tbody>
             <tr>
@@ -150,7 +158,33 @@ class App extends Component {
             </tr>
           </tbody>
         </table>
-      </header>
+
+        <div className="App-body">
+          <div className="App-body-left">
+            <div className="App-body-left-top">
+              <h1>Kingdom Attack Coin</h1>
+              <p>
+                This is a simple DApp that allows you to buy and sell Kingdom Attack Coins.
+              </p>
+              </div>
+              <div className="App-body-left-bottom">
+                <h2>Buy Kingdom Attack Coins</h2>
+                <p>
+                  This is a simple DApp that allows you to buy and sell Kingdom Attack Coins.
+                </p>
+                <form onSubmit={(event) => {
+                  event.preventDefault()
+                  let amount = event.target.amount.value
+                  this.buyForEth(amount)
+                }}
+                >
+                  <input name="amount" type="text" placeholder="Amount of Kingdom Attack Coins to buy" />
+                  <button type="submit">Buy Kingdom Attack Coins</button>
+                </form>
+              </div>
+          </div>
+          </div>
+      </body>
     </div>
   )
 }
