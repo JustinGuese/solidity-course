@@ -97,13 +97,6 @@ contract KingdomBank {
             block.timestamp + stakingPeriod
             ));
     }
-
-    function debugGetAllStakes() public view returns(address[] memory result) {
-        for (uint i = 0; i < _Staking.length; i++) {
-            result.push(_Staking[msg.sender][i].seedCoinAmount);
-        }
-        return result;
-    }
     
     function getCurrentStakes() public view returns(uint[2] memory balances){
         uint attackPoints = 0;
@@ -129,10 +122,20 @@ contract KingdomBank {
         for (uint i = 0; i < _Staking[msg.sender].length; i++) {
             Staking memory stakeobj = _Staking[msg.sender][i];
             if (stakeobj.targetCoinType == 0) {
-                timeuntildone[0] = uint256(block.timestamp - stakeobj.readyTime);
+                if (stakeobj.readyTime > block.timestamp) {
+                    timeuntildone[0] = uint(stakeobj.readyTime - block.timestamp);
+                }
+                else {
+                    timeuntildone[0] = uint(0);
+                }
             }
             else if (stakeobj.targetCoinType == 1) {
-                timeuntildone[1] = uint256(block.timestamp - stakeobj.readyTime);
+                if (stakeobj.readyTime > block.timestamp) {
+                    timeuntildone[1] = uint(stakeobj.readyTime - block.timestamp);
+                }
+                else {
+                    timeuntildone[1] = uint(0);
+                }
             }
         }
         return timeuntildone;

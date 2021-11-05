@@ -62,18 +62,20 @@ class App extends Component {
       loadCount++;
       // set state of staking 
       // console.log("geddin stakingres");
-      let stakingres = await kgdbc.methods.getCurrentStakes().call();
+      let stakingres = await kgdbc.methods.getCurrentStakes().call({ from: this.state.account });
+      
       let stakingtime = [0,0];
       console.log(stakingres, "stakingres");
-      if (stakingres[0] > 0 || stakingres[1] > 0) {
-        stakingtime = await kgdbc.methods.getTimeUntilStakingDone().call();
+      if (parseInt(stakingres[0]) > 0 || parseInt(stakingres[1]) > 0) {
+        stakingtime = await kgdbc.methods.getTimeUntilStakingDone().call({ from: this.state.account });
+        console.log("i got takingtime", stakingtime);
       }
       
       // console.log("stakingres: ", stakingres);
       this.setState({
-        kgdat_stakes: stakingres[0].toString(),
+        kgdat_stakes: stakingres[0],
         kgdat_stakeTimeRemaining: stakingtime[0].toString(),
-        kgddf_stakes: stakingres[1].toString(),
+        kgddf_stakes: stakingres[1],
         kgddf_stakeTimeRemaining: stakingtime[1].toString(),
       });
 

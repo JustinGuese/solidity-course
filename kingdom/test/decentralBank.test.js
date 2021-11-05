@@ -145,6 +145,13 @@ contract("KingdomBank", (accounts) => {
             let defensePoints = res[1].toString();
             attackPoints.should.equal(web3.utils.toWei("75", "ether"));
             defensePoints.should.equal(web3.utils.toWei("5", "ether"));
+            // check remaining time
+            let remTime = await kb.getTimeUntilStakingDone({from: accounts[1]});
+            let attackRemTime = remTime[0];
+            let defenseRemTime = remTime[1];
+            attackRemTime.should.not.equal(0);
+            defenseRemTime.should.not.equal(0);
+
             // console.log("in staking: attackpoints/defensepoints", attackPoints, defensePoints);
             // and finally check if balance is still correct
             let balance = await kgdsc.balanceOf(accounts[1]);
@@ -170,6 +177,12 @@ contract("KingdomBank", (accounts) => {
             let defensePoints = res[1].toString();
             attackPoints.should.equal("0");
             defensePoints.should.equal("0");
+            // check remaining time
+            let remTime = await kb.getTimeUntilStakingDone({from: accounts[1]});
+            let attackRemTime = remTime[0].toString();
+            let defenseRemTime = remTime[1].toString();
+            attackRemTime.should.equal("0");
+            defenseRemTime.should.equal("0");
 
             // check how many seedcoins we have returned
             let balance_seed = await kgdsc.balanceOf(accounts[1]);
