@@ -112,6 +112,19 @@ class App extends Component {
     this.state.kgdbc.methods.buyForETH().send({ from: this.state.account, value: amount });
   }
 
+  async plantSeeds(amount, coinType) {
+    console.log("plantSeeds called", amount, coinType);
+    if (coinType === "kgdat") {
+      // first approve
+      this.state.kgdsc.methods.approve(this.state.kgdbc.options.address, amount).send({ from: this.state.account });
+      this.state.kgdbc.methods.plantSeeds(amount, 0).send({ from: this.state.account });
+    }
+    else if (coinType === "kgddf") {
+      this.state.kgdsc.methods.approve(this.state.kgdbc.options.address, amount).send({ from: this.state.account });
+      this.state.kgdbc.methods.plantSeeds(amount, 1).send({ from: this.state.account });
+    }
+  }
+
   render() {
   return (
     <div className="App">
@@ -123,17 +136,17 @@ class App extends Component {
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>                        
           </button>
-          <a class="navbar-brand" href="#">Logo</a>
+          <a class="navbar-brand" href="https://google.com">Logo</a>
         </div>
         <div class="collapse navbar-collapse" id="myNavbar">
           <ul class="nav navbar-nav">
-            <li class="active"><a href="#">Home</a></li>
-            <li><a href="#">About</a></li>
-            <li><a href="#">Projects</a></li>
-            <li><a href="#">Contact</a></li>
+            <li class="active"><a href="https://google.com">Home</a></li>
+            <li><a href="https://google.com">About</a></li>
+            <li><a href="https://google.com">Projects</a></li>
+            <li><a href="https://google.com">Contact</a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
-            <li><a href="#"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+            <li><a href="https://google.com"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
           </ul>
         </div>
       </div>
@@ -142,9 +155,9 @@ class App extends Component {
     <div class="container-fluid text-center">    
       <div class="row content">
         <div class="col-sm-2 sidenav">
-          <p><a href="#">Link</a></p>
-          <p><a href="#">Link</a></p>
-          <p><a href="#">Link</a></p>
+          <p><a href="https://google.com">Link</a></p>
+          <p><a href="https://google.com">Link</a></p>
+          <p><a href="https://google.com">Link</a></p>
         </div>
         <div class="col-sm-8 text-left"> 
           <h1>Welcome</h1>
@@ -199,14 +212,42 @@ class App extends Component {
                   this.buyForEth(amount)
                 }}
                 >
-                  <input name="amount" type="text" placeholder="Amount of Kingdom Attack Coins to buy" />
-                  <button type="submit">Buy Kingdom Attack Coins</button>
+                  <input name="amount" type="text" placeholder="Amount of Kingdom Seed Coins to buy" />
+                  <button type="submit">Buy Kingdom Seed Coins</button>
                 </form>
+          </div>
+
+          <div class="col-sm-8 content text-left">
+            <h3>Stake KingdomSeedcoins for KingdomAttackCoin</h3>
+            <p>whatever</p>
+            <form onSubmit={(event) => {
+                    event.preventDefault()
+                    let amount = event.target.amount.value
+                    this.plantSeeds(amount, "kgdat")
+                  }}
+                  >
+                    <input name="amount" type="text" placeholder="Amount of Seedcoin to plant" />
+                    <button type="submit">Seed for Kingdom Attack Coins</button>
+            </form>
+          </div>
+
+          <div class="col-sm-8 content text-left">
+            <h3>Stake KingdomSeedcoins for KingdomDefenseCoin</h3>
+            <p>whatever</p>
+            <form onSubmit={(event) => {
+                    event.preventDefault()
+                    let amount = event.target.amount.value
+                    this.plantSeeds(amount, "kgddf")
+                  }}
+                  >
+                    <input name="amount" type="text" placeholder="Amount of Seedcoin to plant" />
+                    <button type="submit">Seed for Kingdom Defense Coins</button>
+            </form>
+          </div>
           
 
 
-
-        </div>
+        
         <div class="col-sm-2 sidenav">
           <div class="well">
             <p>ADS</p>
