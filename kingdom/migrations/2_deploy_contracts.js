@@ -1,7 +1,7 @@
 const KGDSC = artifacts.require("KingdomSeedCoin");
 const KGDAT = artifacts.require("KingdomAttackCoin");
 const KGDDF = artifacts.require("KingdomDefenseCoin");
-const KB = artifacts.require("KingdomTitles");
+const KB = artifacts.require("KingdomGameMechanic");
 
 module.exports = async function (deployer, network, accounts) {
   await deployer.deploy(KGDSC);

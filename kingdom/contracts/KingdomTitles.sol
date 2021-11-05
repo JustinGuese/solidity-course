@@ -11,8 +11,19 @@ contract KingdomTitles is ERC721, KingdomBank {
     address private _owner;
     
     Counters.Counter private _tokenIds;
-    uint16 public totalSupply = 10000;
+    uint16 constant public totalSupply = 10000;
+    uint public attackCooldown = 60 seconds;
     string public baseUrl = "https://www.kingdomcrypto.com/titles/";
+
+    struct KingdomTitle {
+        uint attackPoints;
+        uint defensePoints;
+        uint readyTimeAttack;
+    }
+
+    KingdomTitle[totalSupply] public kingdomtitles;
+
+    mapping (address => uint[]) public address2ids;
 
     constructor(KingdomSeedCoin kgdsc, KingdomAttackCoin kgdat, KingdomDefenseCoin kgddf) ERC721("Kingdom Titles", "KGD") KingdomBank(kgdsc, kgdat, kgddf) {
         _owner = _msgSender();
@@ -52,10 +63,17 @@ contract KingdomTitles is ERC721, KingdomBank {
     function awardItem(address player) public onlyOwner returns (uint256) {
         require(_tokenIds.current() < totalSupply, "uhoh, no titles available anymore");
 
+        // todo: get rid of tokenIds and exchange with struct
         _tokenIds.increment();      
 
         uint256 newItemId = _tokenIds.current();
         _mint(player, newItemId);
+
+        // mark it down in address2ids
+        address2ids[player].push(newItemId);
+
+        // then add data to storage
+        kingdomtitles[newItemId] = KingdomTitle(0,0,block.timestamp + attackCooldown);
 
         return newItemId;
     }
@@ -63,10 +81,23 @@ contract KingdomTitles is ERC721, KingdomBank {
     function reverseItem(uint256 itemId) public onlyOwner returns (bool) {
         address ownerOfItem = ownerOf(itemId);
         _transfer(ownerOfItem, address(this), itemId);
+        uint pos = 6666;
+        for (uint i = 0; i < address2ids[ownerOfItem].length; i++) {
+            if (address2ids[ownerOfItem][i] == itemId) {
+                pos = i;
+                break;
+            }
+        }
+        require(pos != 6666, "reverse item function... item not found in address2ids");
+        delete address2ids[ownerOfItem][pos];
         return true;
     }
 
     function tokenMetadata(uint256 _tokenId) public view returns (string memory infoUrl) {
         return string(abi.encodePacked(baseUrl, uint2str(_tokenId)));
+    }
+
+    function returnIdsOfAddress(address _own) external view returns (uint256[] memory ownedIds) {
+        return address2ids[_own];
     }
 }
