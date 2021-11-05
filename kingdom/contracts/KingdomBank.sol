@@ -20,6 +20,9 @@ contract KingdomBank {
     KingdomAttackCoin public kgdat;
     KingdomDefenseCoin public kgddf;
 
+    event enterStakingAttackPoints(address indexed _from, uint _amount);
+    event enterStakingDefensePoints(address indexed _from, uint _amount);
+
     event HarvestAttackPoints(address indexed _to, uint _amount);
     event HarvestDefensePoints(address indexed _to, uint _amount);
     event HarvestRemainingSeedCoins(address indexed _to, uint _amount, uint _beforeBurn);
@@ -74,14 +77,32 @@ contract KingdomBank {
         require(targetCoin == 0 || targetCoin == 1, "targetCoin has to be 0=attackcoin or 1=defensecoin");
         // enter staking
         // first transact the kgdsc
+        // first approve built in 
+
+        if (targetCoin == 0) {
+            emit enterStakingAttackPoints(msg.sender, nrSeedCoins);
+        }
+        else if (targetCoin == 1) {
+            emit enterStakingDefensePoints(msg.sender, nrSeedCoins);
+        }
+        // kgdsc.approve(address(this), nrSeedCoins);
         kgdsc.transferFrom(msg.sender, address(this), nrSeedCoins);
-        // kgdsc.transfer(address(this), nrSeedCoins);
+        
+
+
         // then store in array
         _Staking[msg.sender].push(Staking(
             nrSeedCoins,
             targetCoin,
             block.timestamp + stakingPeriod
             ));
+    }
+
+    function debugGetAllStakes() public view returns(address[] memory result) {
+        for (uint i = 0; i < _Staking.length; i++) {
+            result.push(_Staking[msg.sender][i].seedCoinAmount);
+        }
+        return result;
     }
     
     function getCurrentStakes() public view returns(uint[2] memory balances){
@@ -96,8 +117,25 @@ contract KingdomBank {
                 defensePoints += stakeobj.seedCoinAmount;
             }
         }
+        // , attackStakeTimeRemaining, defenseStakeTimeRemaining
         uint[2] memory res = [attackPoints, defensePoints];
         return res;
+    }
+
+    function getTimeUntilStakingDone() public view returns(uint256[2] memory timeuntildone) {
+        // somehow we need to seperate this functionality from the other, as this causes
+        // a buffer overflow error if not
+        timeuntildone = [uint256(0), uint256(0)];
+        for (uint i = 0; i < _Staking[msg.sender].length; i++) {
+            Staking memory stakeobj = _Staking[msg.sender][i];
+            if (stakeobj.targetCoinType == 0) {
+                timeuntildone[0] = uint256(block.timestamp - stakeobj.readyTime);
+            }
+            else if (stakeobj.targetCoinType == 1) {
+                timeuntildone[1] = uint256(block.timestamp - stakeobj.readyTime);
+            }
+        }
+        return timeuntildone;
     }
 
     function _burnReturnSeedcoins(uint nrSeedCoins) private {

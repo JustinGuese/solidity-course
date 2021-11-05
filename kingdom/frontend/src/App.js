@@ -60,6 +60,23 @@ class App extends Component {
       console.log("yo got dat balance for seedycoin, is: ", balance4.toString());
       this.setState({ kgdbc : kgdbc, kgdbc_balance : balance4.toString() });
       loadCount++;
+      // set state of staking 
+      // console.log("geddin stakingres");
+      let stakingres = await kgdbc.methods.getCurrentStakes().call();
+      let stakingtime = [0,0];
+      console.log(stakingres, "stakingres");
+      if (stakingres[0] > 0 || stakingres[1] > 0) {
+        stakingtime = await kgdbc.methods.getTimeUntilStakingDone().call();
+      }
+      
+      // console.log("stakingres: ", stakingres);
+      this.setState({
+        kgdat_stakes: stakingres[0].toString(),
+        kgdat_stakeTimeRemaining: stakingtime[0].toString(),
+        kgddf_stakes: stakingres[1].toString(),
+        kgddf_stakeTimeRemaining: stakingtime[1].toString(),
+      });
+
     }
     else {
       console.log("Bankcoin not deployed to this network");
@@ -100,7 +117,12 @@ class App extends Component {
       kgdsc_balance: 0,
       kgdbc: {},
       kgdbc_balance: 0,
-      loading: true
+      loading: true,
+      // stakes
+      kgdat_stakes: 0,
+      kgdat_stakeTimeRemaining: 0,
+      kgddf_stakes: 0,
+      kgddf_stakeTimeRemaining: 0,
     }
     this.Web3Mount();
     this.LoadBlockchainData();
@@ -114,14 +136,19 @@ class App extends Component {
 
   async plantSeeds(amount, coinType) {
     console.log("plantSeeds called", amount, coinType);
-    if (coinType === "kgdat") {
-      // first approve
-      this.state.kgdsc.methods.approve(this.state.kgdbc.options.address, amount).send({ from: this.state.account });
-      this.state.kgdbc.methods.plantSeeds(amount, 0).send({ from: this.state.account });
+    try {
+      if (coinType === "kgdat") {
+        // first approve
+        this.state.kgdsc.methods.approve(this.state.kgdbc.options.address, amount).send({ from: this.state.account });
+        this.state.kgdbc.methods.plantSeeds(amount, 0).send({ from: this.state.account });
+      }
+      else if (coinType === "kgddf") {
+        this.state.kgdsc.methods.approve(this.state.kgdbc.options.address, amount).send({ from: this.state.account });
+        this.state.kgdbc.methods.plantSeeds(amount, 1).send({ from: this.state.account });
+      }
     }
-    else if (coinType === "kgddf") {
-      this.state.kgdsc.methods.approve(this.state.kgdbc.options.address, amount).send({ from: this.state.account });
-      this.state.kgdbc.methods.plantSeeds(amount, 1).send({ from: this.state.account });
+    catch (error) {
+      console.log("error in plant seeds function: ", error);
     }
   }
 
@@ -198,6 +225,15 @@ class App extends Component {
               <td>Balance of KingdomGameMechanic:</td>
               <td>{this.state.kgdbc_balance}</td>
             </tr>
+            <tr>
+              <td>Stakes of KingdomAttackCoin:</td>
+              <td>{this.state.kgdat_stakes}, time remaining (s): { this.state.kgdat_stakeTimeRemaining } </td>
+            </tr>
+            <tr>
+              <td>Stakes of KingdomDefenseCoin:</td>
+              <td>{this.state.kgddf_stakes}, time remaining (s): { this.state.kgddf_stakeTimeRemaining } </td>
+            </tr>
+            
           </tbody>
         </table>
 
