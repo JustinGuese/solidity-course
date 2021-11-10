@@ -81,7 +81,6 @@ class App extends Component {
             });
         }
       }
-        
       }
       
     else {
@@ -144,6 +143,18 @@ class App extends Component {
     console.log("buyForEth called", amount);
     await this.state.kgdbc.methods.buyForETH().send({ from: this.state.account, value: amount });
     await this.LoadBlockchainData(); // udpate
+    this.state.loading = false;
+    window.location.reload(false);
+  }
+
+  async setSeedingTime() {
+    this.state.loading = true;
+    console.log("setSeedingTime called");
+    let stakingtime = await this.state.kgdbc.methods.getTimeUntilStakingDone().call({ from: this.state.account });
+    this.setState({
+      kgdat_stakeTimeRemaining: stakingtime[0].toString(),
+      kgddf_stakeTimeRemaining: stakingtime[1].toString(),
+    });
     this.state.loading = false;
     window.location.reload(false);
   }
@@ -254,6 +265,18 @@ class App extends Component {
             <tr>
               <td>Nr of titles owned:</td>
               <td>{this.state.kgdbc_balance}</td>
+            </tr>
+            <tr>
+              <td>update time remaining for seedcoin harvest</td>
+                <td>
+                  <form onSubmit={(event) => {
+                    event.preventDefault()
+                    // let amount = event.target.amount.value
+                    this.setSeedingTime()
+                  }}>
+                  <button type="submit">Update Harvest Time</button>
+                </form>
+              </td>
             </tr>
             <tr>
               <td>Stakes of KingdomAttackCoin:</td>
