@@ -54,6 +54,7 @@ class App extends Component {
       console.log("Seedcoin not deployed to this network");
     }
     if (kgdatDataBC) {
+      // console.log("bankcoin active");
       // next bcoin
       const kgdbc = new web3.eth.Contract(KingdomGameMechanic.abi, kgdatDataBC.address);
       let balance4 = await kgdbc.methods.balanceOf(account).call();
@@ -63,23 +64,26 @@ class App extends Component {
       // set state of staking 
       // console.log("geddin stakingres");
       let stakingres = await kgdbc.methods.getCurrentStakes().call({ from: this.state.account });
-      
-      let stakingtime = [0,0];
-      console.log(stakingres, "stakingres");
-      if (parseInt(stakingres[0]) > 0 || parseInt(stakingres[1]) > 0) {
-        stakingtime = await kgdbc.methods.getTimeUntilStakingDone().call({ from: this.state.account });
-        console.log("i got takingtime", stakingtime);
+        if (stakingres) {
+          console.log(stakingres, "stakingres");
+          if (parseInt(stakingres[0]) > 0 || parseInt(stakingres[1]) > 0) {
+            console.log(stakingres, "stakingresfixy");
+            // fuck this shit, somehow it is not working, fuck all javascript and fuck react
+            // let stakingtime = await kgdbc.methods.getTimeUntilStakingDone22().call({ from: this.state.account }); // await kgdbc.methods.getTimeUntilStakingDone().call({ from: this.state.account });
+            let stakingtime = [0,0];
+            // console.log("stakingres: ", stakingres);
+            console.log("i will fucking set the values now to ", stakingres, stakingtime)
+            this.setState({
+              kgdat_stakes: stakingres[0].toString(),
+              kgdat_stakeTimeRemaining: stakingtime[0].toString(),
+              kgddf_stakes: stakingres[1].toString(),
+              kgddf_stakeTimeRemaining: stakingtime[1].toString(),
+            });
+        }
+      }
+        
       }
       
-      // console.log("stakingres: ", stakingres);
-      this.setState({
-        kgdat_stakes: stakingres[0],
-        kgdat_stakeTimeRemaining: stakingtime[0].toString(),
-        kgddf_stakes: stakingres[1],
-        kgddf_stakeTimeRemaining: stakingtime[1].toString(),
-      });
-
-    }
     else {
       console.log("Bankcoin not deployed to this network");
     }
@@ -128,33 +132,57 @@ class App extends Component {
     }
     this.Web3Mount();
     this.LoadBlockchainData();
+    this.state.loading = false;
+    // somehow staking cant be set, wtf, but do it here
+
+
   }
 
   // logic for buying seedcoin with eth
   async buyForEth(amount) {
+    this.state.loading = true;
     console.log("buyForEth called", amount);
-    this.state.kgdbc.methods.buyForETH().send({ from: this.state.account, value: amount });
+    await this.state.kgdbc.methods.buyForETH().send({ from: this.state.account, value: amount });
+    await this.LoadBlockchainData(); // udpate
+    this.state.loading = false;
+    window.location.reload(false);
   }
 
   async plantSeeds(amount, coinType) {
     console.log("plantSeeds called", amount, coinType);
+    this.state.loading = true;
     try {
       if (coinType === "kgdat") {
         // first approve
-        this.state.kgdsc.methods.approve(this.state.kgdbc.options.address, amount).send({ from: this.state.account });
-        this.state.kgdbc.methods.plantSeeds(amount, 0).send({ from: this.state.account });
+        await this.state.kgdsc.methods.approve(this.state.kgdbc.options.address, amount).send({ from: this.state.account });
+        await this.state.kgdbc.methods.plantSeeds(amount, 0).send({ from: this.state.account });
       }
       else if (coinType === "kgddf") {
-        this.state.kgdsc.methods.approve(this.state.kgdbc.options.address, amount).send({ from: this.state.account });
-        this.state.kgdbc.methods.plantSeeds(amount, 1).send({ from: this.state.account });
+        await this.state.kgdsc.methods.approve(this.state.kgdbc.options.address, amount).send({ from: this.state.account });
+        await this.state.kgdbc.methods.plantSeeds(amount, 1).send({ from: this.state.account });
       }
+      await this.LoadBlockchainData(); // udpate
+      this.state.loading = false;
+      window.location.reload(false);
     }
     catch (error) {
       console.log("error in plant seeds function: ", error);
     }
   }
 
+  async harvestAll() {
+    this.state.loading = true;
+    await this.state.kgdbc.methods.harvestAll().send({ from: this.state.account });
+    await this.LoadBlockchainData(); // udpate
+    this.state.loading = false;
+    window.location.reload(false);
+  }
+
   render() {
+  if (this.state.loading) {
+    return <p>loading...</p>
+  }
+
   return (
     <div className="App">
     <nav class="navbar navbar-inverse">
@@ -224,7 +252,7 @@ class App extends Component {
               <td>{this.state.kgdsc_balance}</td>
             </tr>
             <tr>
-              <td>Balance of KingdomGameMechanic:</td>
+              <td>Nr of titles owned:</td>
               <td>{this.state.kgdbc_balance}</td>
             </tr>
             <tr>
@@ -256,6 +284,10 @@ class App extends Component {
           </div>
 
           <div class="col-sm-8 content text-left">
+            <h2>Seeding</h2>
+          </div>
+
+          <div class="col-sm-8 content text-left">
             <h3>Stake KingdomSeedcoins for KingdomAttackCoin</h3>
             <p>whatever</p>
             <form onSubmit={(event) => {
@@ -280,6 +312,23 @@ class App extends Component {
                   >
                     <input name="amount" type="text" placeholder="Amount of Seedcoin to plant" />
                     <button type="submit">Seed for Kingdom Defense Coins</button>
+            </form>
+          </div>
+
+          <div class="col-sm-8 content text-left">
+            <h2>Harvesting</h2>
+          </div>
+
+          <div class="col-sm-8 content text-left">
+            <h3>Harvest all</h3>
+            <p>Harvest all available</p>
+            <form onSubmit={(event) => {
+                    event.preventDefault()
+                    // let amount = event.target.amount.value
+                    this.harvestAll()
+                  }}
+                  >
+                    <button type="submit">Harvest all</button>
             </form>
           </div>
           

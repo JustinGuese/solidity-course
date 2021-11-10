@@ -98,7 +98,7 @@ contract KingdomBank {
             ));
     }
     
-    function getCurrentStakes() public view returns(uint[2] memory balances){
+    function getCurrentStakes() public view returns(uint[2] memory){
         uint attackPoints = 0;
         uint defensePoints = 0;
         for (uint i = 0; i < _Staking[msg.sender].length; i++) {
@@ -115,23 +115,22 @@ contract KingdomBank {
         return res;
     }
 
-    function getTimeUntilStakingDone() public view returns(uint256[2] memory timeuntildone) {
+    function getTimeUntilStakingDone() public view returns(uint[2] memory timeuntildone){
         // somehow we need to seperate this functionality from the other, as this causes
         // a buffer overflow error if not
-        timeuntildone = [uint256(0), uint256(0)];
         for (uint i = 0; i < _Staking[msg.sender].length; i++) {
             Staking memory stakeobj = _Staking[msg.sender][i];
             if (stakeobj.targetCoinType == 0) {
-                if (stakeobj.readyTime > block.timestamp) {
-                    timeuntildone[0] = uint(stakeobj.readyTime - block.timestamp);
+                if (uint(stakeobj.readyTime) > uint(block.timestamp)) {
+                    timeuntildone[0] = 22; // uint(stakeobj.readyTime - block.timestamp);
                 }
                 else {
                     timeuntildone[0] = uint(0);
                 }
             }
             else if (stakeobj.targetCoinType == 1) {
-                if (stakeobj.readyTime > block.timestamp) {
-                    timeuntildone[1] = uint(stakeobj.readyTime - block.timestamp);
+                if (uint(stakeobj.readyTime) > uint(block.timestamp)) {
+                    timeuntildone[1] = 23; // uint(stakeobj.readyTime - block.timestamp);
                 }
                 else {
                     timeuntildone[1] = uint(0);
