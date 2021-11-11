@@ -35,12 +35,6 @@ contract KingdomTitles is ERC721, KingdomBank {
         _;
     }
 
-    function getKingdomTitleStats(uint8 titleId) public view returns (uint[3] memory stats) {
-        stats[0] = kingdomtitles[titleId].attackPoints;
-        stats[1] = kingdomtitles[titleId].defensePoints;
-        stats[2] = kingdomtitles[titleId].readyTimeAttack;
-    }
-
     function uint2str(uint _i) internal pure returns (string memory _uintAsString) {
         if (_i == 0) {
             return "0";
@@ -113,10 +107,6 @@ contract KingdomTitles is ERC721, KingdomBank {
             }
         }
         return ranks;
-    }
-
-    function updateCheck() public pure returns (string memory) {
-        return "fuck u";
     }
 
     function returnIdsOfAddress(address _own) public view returns (uint256[] memory ownedIds) {
