@@ -2,14 +2,17 @@ pragma solidity ^0.8;
 
 import "./KingdomTitles.sol";
 
-contract KingdomGameMechanic is KingdomTitles {
+contract KingdomGameMechanic {
 
     uint private nowStore;
 
     event Log(uint error);
 
-    constructor (KingdomSeedCoin kgdsc, KingdomAttackCoin kgdat, KingdomDefenseCoin kgddf) KingdomTitles(kgdsc, kgdat, kgddf) {
+    KingdomTitles internal kgdti;
+
+    constructor (KingdomTitles _kgdti) {
         nowStore = block.timestamp;
+        kgdti = _kgdti;
     }
 
     event Attack(address attacker, address defender, 
@@ -22,12 +25,12 @@ contract KingdomGameMechanic is KingdomTitles {
                 uint16 new_attacker_id);
 
     modifier hasTitle {
-        require(balanceOf(msg.sender) > 0, "to use this function you need a title! go buy one!");
+        require(kgdti.balanceOf(msg.sender) > 0, "to use this function you need a title! go buy one!");
         _;
     }
 
     modifier contractNeedsTotalControl {
-        require(isApprovedForAll(msg.sender, address(this)), "you need to call setApprovalForAll in order to play a game...");
+        require(kgdti.isApprovedForAll(msg.sender, address(this)), "you need to call setApprovalForAll in order to play a game...");
         _;
     }
 
@@ -49,7 +52,7 @@ contract KingdomGameMechanic is KingdomTitles {
     }
 
     function getServants(uint16 id) public view returns (uint16 left, uint16 right) {
-        uint currentPos = currentPosition();
+        uint currentPos = kgdti.currentPosition();
         require(id <= currentPos, "id is not yet assigned");
 
         // binary tree
@@ -68,7 +71,7 @@ contract KingdomGameMechanic is KingdomTitles {
     }
 
     function getBoss(uint16 id) public view returns (uint16 bossid) {
-        uint currentPos = currentPosition();
+        uint currentPos = kgdti.currentPosition();
         require(0 < id && id <= currentPos, "id is not yet assigned");
 
         // remember binary tree
@@ -88,16 +91,17 @@ contract KingdomGameMechanic is KingdomTitles {
         return bossid;
     }
 
-    function getTitleStats(uint32 titleId) public view returns (uint attackPoints, uint defensePoints, bool ready4attack){
-        require(titleId <= currentPosition(), "title id not yet assigned, go get one");
-        attackPoints = kingdomtitles[titleId].attackPoints;
-        defensePoints = kingdomtitles[titleId].defensePoints;
-        ready4attack = kingdomtitles[titleId].readyTimeAttack >= block.timestamp;
+    function getTitleStats(uint8 titleId) public view returns (uint attackPoints, uint defensePoints, bool ready4attack){
+        require(titleId <= kgdti.currentPosition(), "title id not yet assigned, go get one");
+        uint[3] memory stats = kgdti.getKingdomTitleStats(titleId);
+        attackPoints = stats[0];
+        defensePoints = stats[1];
+        ready4attack = stats[2] >= block.timestamp;
         return (attackPoints, defensePoints, ready4attack);
     }
 
     function assignMilitaryToTitle(uint nrCoins, uint32 titleId, uint8 coinType) public {
-        uint currentPos = currentPosition();
+        uint currentPos = kgdti.currentPosition();
         require(0 < titleId && titleId <= currentPos, "title id is not yet assigned");
         // needs an approve first!
 
@@ -108,15 +112,15 @@ contract KingdomGameMechanic is KingdomTitles {
         require(coinType == 0 || coinType == 1, "other coin types not supported yet, must be 0 or 1");
         if (coinType == 0) {
             // attack points
-            require(kgdat.balanceOf(msg.sender) >= nrCoins, "you do not have that many attack coins");
-            kgdat.transferFrom(msg.sender, address(this), nrCoins);
-            kingdomtitles[titleId].attackPoints += nrCoins;
+            require(kgdti.kgdat.balanceOf(msg.sender) >= nrCoins, "you do not have that many attack coins");
+            kgdti.kgdat.transferFrom(msg.sender, address(this), nrCoins);
+            kgdti.kingdomtitles[titleId].attackPoints += nrCoins;
         }
         else if (coinType == 1) {
             // def coins
-            require(kgddf.balanceOf(msg.sender) >= nrCoins, "you do not have that many defense coins");
-            kgddf.transferFrom(msg.sender, address(this), nrCoins);
-            kingdomtitles[titleId].defensePoints += nrCoins;
+            require(kgdti.kgddf.balanceOf(msg.sender) >= nrCoins, "you do not have that many defense coins");
+            kgdti.kgddf.transferFrom(msg.sender, address(this), nrCoins);
+            kgdti.kingdomtitles[titleId].defensePoints += nrCoins;
         }
     }
 
@@ -136,10 +140,10 @@ contract KingdomGameMechanic is KingdomTitles {
                 deadAttackers, defenderPoints,
                 denominator, remainder, won);
         // finally update the title struct
-        kingdomtitles[attackerId].attackPoints -= deadAttackers;
-        require(kingdomtitles[attackerId].attackPoints > 0, "uhoh, the attackpoints are zero...");
-        kingdomtitles[defenderId].defensePoints -= deadDefenders; 
-        require(kingdomtitles[defenderId].defensePoints > 0, "uhoh, the defensepoints are zero...");
+        kgdti.kingdomtitles[attackerId].attackPoints -= deadAttackers;
+        require(kgdti.kingdomtitles[attackerId].attackPoints > 0, "uhoh, the attackpoints are zero...");
+        kgdti.kingdomtitles[defenderId].defensePoints -= deadDefenders; 
+        require(kgdti.kingdomtitles[defenderId].defensePoints > 0, "uhoh, the defensepoints are zero...");
     }
 
     function _divide(uint numerator, uint denominator) private pure returns (uint quotient, uint remainder) {
@@ -149,12 +153,12 @@ contract KingdomGameMechanic is KingdomTitles {
     }
 
     function attackBoss(uint16 titleId) public hasTitle contractNeedsTotalControl {
-        require(ownerOf(titleId) == msg.sender, "sorry, only the owner can attack his boss");
+        require(kgdti.ownerOf(titleId) == msg.sender, "sorry, only the owner can attack his boss");
 
         uint16 bossid = getBoss(titleId);
-        address bossid_address = ownerOf(bossid);
+        address bossid_address = kgdti.ownerOf(bossid);
         // check if boss setApprovalForAll as well, required
-        require(isApprovedForAll(bossid_address, address(this)), "your boss needs to setApprovedForAll to this contract, otherwise the mechanism does not work. He only earns money if that approval has been set though.");
+        require(kgdti.isApprovedForAll(bossid_address, address(this)), "your boss needs to setApprovedForAll to this contract, otherwise the mechanism does not work. He only earns money if that approval has been set though.");
 
         require(bossid_address != msg.sender, "boy, don't attack yourself plz");
 

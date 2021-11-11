@@ -1,7 +1,8 @@
 const KGDSC = artifacts.require("KingdomSeedCoin");
 const KGDAT = artifacts.require("KingdomAttackCoin");
 const KGDDF = artifacts.require("KingdomDefenseCoin");
-const KB = artifacts.require("KingdomGameMechanic");
+const KGDTI = artifacts.require("KingdomTitles");
+// const KGDGM = artifacts.require("KingdomGameMechanic");
 
 module.exports = async function (deployer, network, accounts) {
   await deployer.deploy(KGDSC);
@@ -11,10 +12,14 @@ module.exports = async function (deployer, network, accounts) {
   await deployer.deploy(KGDDF);
   const kgddf = await KGDDF.deployed();
 
-  await deployer.deploy(KB, kgdsc.address, kgdat.address, kgddf.address);
-  const kb = await KB.deployed();
+  await deployer.deploy(KGDTI, kgdsc.address, kgdat.address, kgddf.address);
+  const kgdti = await KGDTI.deployed();
+
+  // game mechanic as own deployment
+  // await deployer.deploy(KGDGM, kgdti.address);
+  // const kgdgm = await KGDGM.deployed();
   
-  await kgdsc.transfer(kb.address, "1000000000000000000000000");
-  await kgdat.transfer(kb.address, "1000000000000000000000000");
-  await kgddf.transfer(kb.address, "1000000000000000000000000");
+  await kgdsc.transfer(kgdti.address, "1000000000000000000000000");
+  await kgdat.transfer(kgdti.address, "1000000000000000000000000");
+  await kgddf.transfer(kgdti.address, "1000000000000000000000000");
 }

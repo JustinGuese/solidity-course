@@ -35,6 +35,12 @@ contract KingdomTitles is ERC721, KingdomBank {
         _;
     }
 
+    function getKingdomTitleStats(uint8 titleId) public view returns (uint[3] memory stats) {
+        stats[0] = kingdomtitles[titleId].attackPoints;
+        stats[1] = kingdomtitles[titleId].defensePoints;
+        stats[2] = kingdomtitles[titleId].readyTimeAttack;
+    }
+
     function uint2str(uint _i) internal pure returns (string memory _uintAsString) {
         if (_i == 0) {
             return "0";
@@ -98,11 +104,22 @@ contract KingdomTitles is ERC721, KingdomBank {
         return string(abi.encodePacked(baseUrl, uint2str(_tokenId)));
     }
 
+    function returnRanksOfTitles(address _own) public view returns (uint256[] memory) {
+        uint256[] memory ids = address2ids[_own];
+        uint256[] memory ranks = new uint256[](ids.length);
+        if (ids.length != 0) {
+            for (uint i = 0; i < ids.length; i++) {
+                ranks[i] = titleId2Rank[ids[i]];
+            }
+        }
+        return ranks;
+    }
+
+    function updateCheck() public pure returns (string memory) {
+        return "fuck u";
+    }
+
     function returnIdsOfAddress(address _own) public view returns (uint256[] memory ownedIds) {
-        ownedIds = address2ids[_own];
-        // for (uint i = 0; i < ownedIds.length; i++) {
-        //     ranksOfIds[i] = titleId2Rank[ownedIds[i]];
-        // }
-        return ownedIds;
+        return address2ids[_own];
     }
 }
