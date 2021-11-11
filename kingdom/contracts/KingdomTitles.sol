@@ -1,16 +1,13 @@
 pragma solidity ^0.8;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./KingdomBank.sol";
 
 contract KingdomTitles is ERC721, KingdomBank {
-    using Counters for Counters.Counter;
     
     address private _owner;
     
-    Counters.Counter private _tokenIds;
     uint16 constant public totalSupply = 10000;
     uint public attackCooldown = 60 seconds;
     string public baseUrl = "https://www.kingdomcrypto.com/titles/";
@@ -23,10 +20,14 @@ contract KingdomTitles is ERC721, KingdomBank {
 
     KingdomTitle[totalSupply] public kingdomtitles;
 
+    mapping (uint => uint) public titleId2Rank;
+    uint8 internal titleCount;
+
     mapping (address => uint[]) public address2ids;
 
     constructor(KingdomSeedCoin kgdsc, KingdomAttackCoin kgdat, KingdomDefenseCoin kgddf) ERC721("Kingdom Titles", "KGD") KingdomBank(kgdsc, kgdat, kgddf) {
         _owner = _msgSender();
+        titleCount = 0;
     }
 
     modifier onlyOwner {
@@ -57,23 +58,23 @@ contract KingdomTitles is ERC721, KingdomBank {
     }
 
     function currentPosition() public view returns (uint256) {
-        return uint256(_tokenIds.current());
+        return uint256(titleCount);
     }
 
     function awardItem(address player) public onlyOwner returns (uint256) {
-        require(_tokenIds.current() < totalSupply, "uhoh, no titles available anymore");
+        require(titleCount < totalSupply, "uhoh, no titles available anymore");  
 
-        // todo: get rid of tokenIds and exchange with struct
-        _tokenIds.increment();      
-
-        uint256 newItemId = _tokenIds.current();
+        uint256 newItemId = titleCount + 1;
         _mint(player, newItemId);
 
         // mark it down in address2ids
         address2ids[player].push(newItemId);
 
         // then add data to storage
+        titleId2Rank[newItemId] = newItemId;
         kingdomtitles[newItemId] = KingdomTitle(0,0,block.timestamp + attackCooldown);
+
+        titleCount++;
 
         return newItemId;
     }
@@ -97,7 +98,11 @@ contract KingdomTitles is ERC721, KingdomBank {
         return string(abi.encodePacked(baseUrl, uint2str(_tokenId)));
     }
 
-    function returnIdsOfAddress(address _own) external view returns (uint256[] memory ownedIds) {
-        return address2ids[_own];
+    function returnIdsOfAddress(address _own) public view returns (uint256[] memory ownedIds) {
+        ownedIds = address2ids[_own];
+        // for (uint i = 0; i < ownedIds.length; i++) {
+        //     ranksOfIds[i] = titleId2Rank[ownedIds[i]];
+        // }
+        return ownedIds;
     }
 }
